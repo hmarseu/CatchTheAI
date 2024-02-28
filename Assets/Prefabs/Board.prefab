@@ -48,8 +48,8 @@ MonoBehaviour:
   casePrefab: {fileID: 3165236478864733527, guid: ed2b31c1f01b0a149bf8b5707c17176a, type: 3}
   numberOfRows: 4
   numberOfColumns: 3
-  horizontalSpacing: 0
-  verticalSpacing: 0
+  horizontalSpacing: 0.05
+  verticalSpacing: 0.05
 --- !u!1 &7151304737442357741
 GameObject:
   m_ObjectHideFlags: 0
