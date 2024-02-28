@@ -143,7 +143,7 @@ public class BoardManager : MonoBehaviour
     }
 
 
-    public delegate void transferPionToMovementManager(SOPiece pion, GameObject[,] boardArray);
+    public delegate void transferPionToMovementManager(SOPiece pion, Vector2Int position,GameObject[,] boardArray);
     public static event transferPionToMovementManager transferPion;
 
     public void OnCaseClicked(Vector2Int position)
@@ -155,7 +155,7 @@ public class BoardManager : MonoBehaviour
         if (piece != null) // && verify if its an ally // TODO
         {
             // return boardArray + piece
-            transferPion(soPiece, boardArray);
+            transferPion(soPiece, position,boardArray);
         }
     }
 
