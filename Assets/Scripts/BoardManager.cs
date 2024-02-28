@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.TextCore.Text;
@@ -10,15 +11,34 @@ public class BoardManager : MonoBehaviour
     [SerializeField] private int numberOfColumns;
     [SerializeField] private float horizontalSpacing;
     [SerializeField] private float verticalSpacing;
+    [SerializeField] private List<GameObject> pionDictionary;
 
     private BoardCase boardCase;
     private GameObject[,] boardArray; // Array that represent the board
 
-    private void Start()
+    private void Awake()
     {
         boardCase = casePrefab.GetComponent<BoardCase>();
+    }
+
+    private void Start()
+    {
         GenerateBoard();
+        StartFillArray();
         LogBoardArray();
+    }
+
+    private void StartFillArray()
+    {
+        PlacePiece(pionDictionary[0], new Vector2Int(0, 0));
+        PlacePiece(pionDictionary[1], new Vector2Int(1, 0));
+        PlacePiece(pionDictionary[2], new Vector2Int(2, 0));
+        PlacePiece(pionDictionary[3], new Vector2Int(1, 1));
+
+        PlacePiece(pionDictionary[0], new Vector2Int(0, 3));
+        PlacePiece(pionDictionary[1], new Vector2Int(1, 3));
+        PlacePiece(pionDictionary[2], new Vector2Int(2, 3));
+        PlacePiece(pionDictionary[3], new Vector2Int(1, 2));
     }
 
     private void GenerateBoard()
