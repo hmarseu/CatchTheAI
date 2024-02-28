@@ -5,6 +5,9 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "Piece", menuName = "ScriptableObject/Piece")]
 public class SOPiece : ScriptableObject
 {
-    public Sprite[] Image;
-    public short IdPiece;
+    public Sprite Image;
+
+    public List<bool> PossibleMoves;
+
+
 }

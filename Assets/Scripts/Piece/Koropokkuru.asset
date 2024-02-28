@@ -12,6 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 39f271d22a96da344b8073e4e03cdd75, type: 3}
   m_Name: Koropokkuru
   m_EditorClassIdentifier: 
-  Image:
-  - {fileID: 21300000, guid: fbcca1cb7c8f04b4c9d8497586468996, type: 3}
-  IdPiece: 2
+  Image: {fileID: 21300000, guid: fbcca1cb7c8f04b4c9d8497586468996, type: 3}
+  PossibleMoves: 010101010001010101

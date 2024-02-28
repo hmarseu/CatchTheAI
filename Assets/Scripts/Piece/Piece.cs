@@ -13,16 +13,15 @@ public class Piece : MonoBehaviour
     private void Start()
     {
         SpriteRenderer sr =  gameObject.AddComponent<SpriteRenderer>();
-        sr.sprite = soPiece.Image[0];
+        sr.sprite = soPiece.Image;
+
+    
     }
     //etre mangé
     protected virtual void Defeated()
     {
         // sors du terrain
     }
-    //etre parachuté
-    protected virtual void Parachuted()
-    {
-       
-    }
+    
+   
 }

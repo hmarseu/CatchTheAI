@@ -13,7 +13,7 @@ public class BoardManager : MonoBehaviour
 
     private BoardCase boardCase;
     private GameObject[,] boardArray; // Array that represent the board
-
+    
     private void Start()
     {
         boardCase = casePrefab.GetComponent<BoardCase>();
