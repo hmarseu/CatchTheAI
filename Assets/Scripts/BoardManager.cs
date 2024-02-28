@@ -101,10 +101,9 @@ public class BoardManager : MonoBehaviour
 
                 if (j < numCols - 1)
                 {
-                    rowContent += " | ";
+                    rowContent += ", ";
                 }
             }
-            Debug.Log(" _  _  _ ");
             Debug.Log(i + ": " + rowContent);
         }
     }
@@ -142,11 +141,13 @@ public class BoardManager : MonoBehaviour
     private void OnEnable()
     {
         BoardCase.caseClicked += OnCaseClicked;
+        MoveManager.possibilities += UpdateTilesClickability;
     }
 
     private void OnDisable()
     {
         BoardCase.caseClicked -= OnCaseClicked;
+        MoveManager.possibilities -= UpdateTilesClickability;
     }
 
 
@@ -157,13 +158,16 @@ public class BoardManager : MonoBehaviour
     {
         // get the piece at the clicked position
         GameObject piece = GetPieceAtPosition(position);
-        SOPiece soPiece = piece.GetComponent<SOPiece>();
 
         if (piece != null) // && verify if its an ally // TODO
         {
             // return boardArray + piece
-            transferPion(soPiece, position,boardArray);
+            SOPiece soPiece = piece.GetComponent<Piece>().soPiece;
+
+            if (soPiece != null) transferPion(soPiece, position, boardArray);
+            else Debug.LogError("soPiece null !");
         }
+        else Debug.LogError("piece null !");
     }
 
     private GameObject GetPieceAtPosition(Vector2Int position)
@@ -184,8 +188,9 @@ public class BoardManager : MonoBehaviour
         return null;
     }
 
-    public void UpdateTilesClickability()
+    public void UpdateTilesClickability(List<Vector2Int> possibleMoves)
     {
+        // go through the board
         for (int i = 0; i < numberOfRows; i++)
         {
             for (int j = 0; j < numberOfColumns; j++)
@@ -196,7 +201,7 @@ public class BoardManager : MonoBehaviour
                 // no selected piece - nothing done yet
                 if (!selectedPiece)
                 {
-                    if (piece != null && isAllyPiece(piece))
+                    if (piece != null) // TODO // && isAllyPiece(piece)
                     {
                         piece.GetComponent<BoardCase>().isClickable = true;
                     }
@@ -208,8 +213,17 @@ public class BoardManager : MonoBehaviour
                 // already selected the piece to move
                 else
                 {
-
-                    piece.GetComponent<BoardCase>().isClickable = true;
+                    foreach (Vector2Int move in possibleMoves)
+                    {
+                        if (move == new Vector2Int(i, j))
+                        {
+                            piece.GetComponent<BoardCase>().isClickable = true;
+                        }
+                        else
+                        {
+                            piece.GetComponent<BoardCase>().isClickable = false;
+                        }
+                    }
                 }
             }
         }
