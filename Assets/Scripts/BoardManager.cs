@@ -59,7 +59,8 @@ public class BoardManager : MonoBehaviour
 
                 newCase.transform.position = new Vector2(positionX, positionY);
 
-                // add the case to the board array
+                // give to the case its position information
+                newCase.GetComponent<BoardCase>().DefinePositionOnBoard(new Vector2Int(i, j));
                 boardArray[i, j] = newCase;
             }
         }
@@ -68,28 +69,35 @@ public class BoardManager : MonoBehaviour
     // debug
     public void LogBoardArray()
     {
-        if (boardArray != null)
-        {
-            int numRows = boardArray.GetLength(0);
-            int numCols = boardArray.GetLength(1);
-
-            for (int i = 0; i < numRows; i++)
-            {
-                string rowContent = "";
-                for (int j = 0; j < numCols; j++)
-                {
-                    rowContent += boardArray[i, j] != null ? "X" : "O"; // display "X" if the case is occupued, "O" if not
-                    if (j < numCols - 1)
-                    {
-                        rowContent += ", ";
-                    }
-                }
-                Debug.Log(i + ": " + rowContent);
-            }
-        }
-        else
-        {
+        if (boardArray == null) {
             Debug.LogWarning("The board array is null.");
+            return;
+        }
+
+        int numRows = boardArray.GetLength(0);
+        int numCols = boardArray.GetLength(1);
+
+        for (int i = 0; i < numRows; i++)
+        {
+            string rowContent = "";
+            for (int j = 0; j < numCols; j++)
+            {
+                if (boardArray[i, j] != null && boardArray[i, j].transform.childCount > 0)
+                {
+                    rowContent += "X"; // display "O" if the case is occupied
+                }
+                else
+                {
+                    rowContent += "O"; // display "X" if the case is empty
+                }
+
+                if (j < numCols - 1)
+                {
+                    rowContent += " | ";
+                }
+            }
+            Debug.Log(" _  _  _ ");
+            Debug.Log(i + ": " + rowContent);
         }
     }
 
@@ -105,15 +113,8 @@ public class BoardManager : MonoBehaviour
         int row = position.x;
         int col = position.y;
 
-        if (row >= 0 && row < numberOfRows && col >= 0 && col < numberOfColumns)
-        {
-            // instantiate a piece on a specified case
-            boardArray[row, col].GetComponent<BoardCase>().PlacePiece(piece);
-        }
-        else
-        {
-            Debug.LogError("Invalid position for placing piece.");
-        }
+        // Instantiate a piece on a specified case
+        boardArray[row, col].GetComponent<BoardCase>().PlacePiece(piece);
     }
 
 
@@ -127,14 +128,53 @@ public class BoardManager : MonoBehaviour
         int row = position.x;
         int col = position.y;
 
-        if (row >= 0 && row < numberOfRows && col >= 0 && col < numberOfColumns)
+        // destroy a piece on a specified case
+        boardArray[row, col].GetComponent<BoardCase>().RemovePiece();
+    }
+
+    private void OnEnable()
+    {
+        BoardCase.caseClicked += OnCaseClicked;
+    }
+
+    private void OnDisable()
+    {
+        BoardCase.caseClicked -= OnCaseClicked;
+    }
+
+
+    public delegate void transferPionToMovementManager(SOPiece pion, GameObject[,] boardArray);
+    public static event transferPionToMovementManager transferPion;
+
+    public void OnCaseClicked(Vector2Int position)
+    {
+        // get the piece at the clicked position
+        GameObject piece = GetPieceAtPosition(position);
+        SOPiece soPiece = piece.GetComponent<SOPiece>();
+
+        if (piece != null) // && verify if its an ally // TODO
         {
-            // destroy a piece on a specified case
-            boardArray[row, col].GetComponent<BoardCase>().RemovePiece();
-        }
-        else
-        {
-            Debug.LogError("Invalid position for removing piece.");
+            // return boardArray + piece
+            transferPion(soPiece, boardArray);
         }
     }
+
+    private GameObject GetPieceAtPosition(Vector2Int position)
+    {
+        int row = position.x;
+        int col = position.y;
+
+        if (row >= 0 && row < numberOfRows && col >= 0 && col < numberOfColumns)
+        {
+            if (boardArray[row, col] != null && boardArray[row, col].transform.childCount > 0)
+            {
+                // return the piece GameObject if it exists in the specified position
+                return boardArray[row, col].transform.GetChild(0).gameObject;
+            }
+        }
+
+        // no piece found
+        return null;
+    }
+
 }
