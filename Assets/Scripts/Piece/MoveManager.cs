@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class MoveManager : MonoBehaviour
 {
-    public delegate void Possibilities(List<bool> tabPossibilte);
+    public delegate void Possibilities(List<Vector2Int> tabPossibilte);
     public static event Possibilities possibilities;
 
     private void OnEnable()
@@ -18,7 +18,7 @@ public class MoveManager : MonoBehaviour
     }
     private void PossibleMove(SOPiece so, Vector2Int position, GameObject[,] boardarray)
     {
-        List<bool> validMoves = new List<bool>();
+        List<Vector2Int> validMoves = new List<Vector2Int>();
         /* 
          * quelle est mouvement peut faire la piece 
          * pour chaque mouvement qu'elle peut faire on verifie si le coup est valide si il n'est pas en dehors et si il n'arrive pas sur un allié
@@ -48,17 +48,11 @@ public class MoveManager : MonoBehaviour
                 int newY = position.y + deltaY[i];
                 if (IsInsideBoard(newX,newY))
                 {
-                    validMoves.Add(true);
+                    validMoves.Add(new Vector2Int(newX,newY));
                 }
-                else
-                {
-                    validMoves.Add(false);
-                }
+              
             }
-            else
-            {
-                validMoves.Add(false);
-            }
+          
         }
         possibilities(validMoves);
     }
