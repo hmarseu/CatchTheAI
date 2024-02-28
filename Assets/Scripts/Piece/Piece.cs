@@ -10,6 +10,11 @@ public class Piece : MonoBehaviour
     public short idPlayer;
     protected short idPiece;
 
+    private void Start()
+    {
+        SpriteRenderer sr =  gameObject.AddComponent<SpriteRenderer>();
+        sr.sprite = soPiece.Image[0];
+    }
     //etre mangé
     protected virtual void Defeated()
     {
