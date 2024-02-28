@@ -1,10 +1,22 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UIElements;
 
 public class BoardCase : MonoBehaviour
 {
     public bool isClickable = false;
+    private Vector2Int positionInBoard;
+    [SerializeField] private BoardManager boardManager;
+
+    public delegate void onClick(Vector2Int positionInBoard);
+    public static event onClick caseClicked;
+
+    public void OnPointerClick()
+    {
+        caseClicked(positionInBoard);
+    }
 
     public Vector2 GetSize()
     {
@@ -38,4 +50,10 @@ public class BoardCase : MonoBehaviour
             Destroy(child.gameObject);
         }
     }
+
+    public void DefinePositionOnBoard(Vector2Int position)
+    {
+        positionInBoard = position;
+    }
+
 }
