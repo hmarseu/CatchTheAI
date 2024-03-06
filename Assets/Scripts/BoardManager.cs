@@ -207,6 +207,15 @@ public class BoardManager : MonoBehaviour
 
     public void UpdateTilesClickability(List<Vector2Int> possibleMoves)
     {
+        Debug.Log("have a selected piece");
+        if (possibleMoves != null)
+        {
+            Debug.Log("List de move : ");
+            foreach (Vector2Int moves in possibleMoves)
+            {
+                Debug.Log(moves);
+            }
+        }
         // go through the board
         for (int i = 0; i < numberOfRows; i++)
         {
@@ -223,18 +232,18 @@ public class BoardManager : MonoBehaviour
                     if (isEmpty) // TODO // && isAllyPiece(piece)
                     {
                         oneOfTheCases.GetComponent<BoardCase>().isClickable = false;
-                        Debug.Log("have nothing");
+                        Debug.Log("have nothing on the case");
                     }
                     else
                     {
                         oneOfTheCases.GetComponent<BoardCase>().isClickable = true;
-                        Debug.Log("have something");
+                        Debug.Log("have something on the case");
                     }
                 }
                 // already selected the piece to move
                 else
                 {
-                    Debug.Log("quoi?! pas de piece ? donne la moula.");
+                    Debug.Log("have a selected piece");
                     if (possibleMoves != null)
                     {
                         foreach (Vector2Int move in possibleMoves)

@@ -41,7 +41,7 @@ public class MoveManager : MonoBehaviour
         int[] deltaX = { -1,  0,  1, -1, 0, 1,-1, 0 ,1};
         int[] deltaY = { -1, -1, -1,  0, 0, 0, 1, 1 ,1};
         
-        for (int i = 0;i < so.PossibleMoves.Count;i++)
+        for (int i = 0; i < so.PossibleMoves.Count; i++)
         {
             if (so.PossibleMoves[i])
             {
@@ -49,11 +49,13 @@ public class MoveManager : MonoBehaviour
                 int newY = position.y + deltaY[i];
                 if (IsInsideBoard(newX,newY))
                 {
+                    // Debug.Log("INSIDE : x=" + newX + " y=" + newY);
                     if (IsCaseEmpty(new Vector2Int(newX, newY)))
                     {
                         validMoves.Add(new Vector2Int(newX,newY));
                     }
                 }
+                // else Debug.Log("NOT INSIDE : x=" + newX + " y=" + newY);
             }        
         }
         possibilities(validMoves);
@@ -61,14 +63,24 @@ public class MoveManager : MonoBehaviour
     // Méthode pour vérifier si une position est à l'intérieur des limites du plateau
     private bool IsInsideBoard(int x, int y)
     {
-        return x >= 0 && x < 5 && y >= 0 && y < 4; // 5 lignes (0 à 4) et 4 colonnes (0 à 3)
+        if (tempBoardArray.Length <= 0)
+        {
+            Debug.LogError("tempBoardArray is empty");
+            return false;
+        }
+
+        int numRows = tempBoardArray.GetLength(0);
+        int numCols = tempBoardArray.GetLength(1);
+        return x >= 0 && x < numRows && y >= 0 && y < numCols;
     }
 
     private bool IsCaseEmpty(Vector2Int pos)
     {
         //a ajouter la verification du "camp" de ce pion
-        if (tempBoardArray[pos.x, pos.y].transform.GetChild(0).gameObject)
+        if (tempBoardArray[pos.x, pos.y].transform.childCount > 0)
         {
+            Transform childTransform = tempBoardArray[pos.x, pos.y].transform.GetChild(0);
+
             // piece pion = tempBoardArray[pos.x, pos.y].transform.GetChild(0).gameObject.getcomponent<piece>()
             //if   pion.player ==...
             return false;
