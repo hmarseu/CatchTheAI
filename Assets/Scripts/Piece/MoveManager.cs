@@ -6,7 +6,7 @@ public class MoveManager : MonoBehaviour
 {
     public delegate void Possibilities(List<Vector2Int> tabPossibilte);
     public static event Possibilities possibilities;
-
+    private GameObject[,] tempBoardArray;
     private void OnEnable()
     {
         BoardManager.transferPion += PossibleMove;
@@ -18,8 +18,8 @@ public class MoveManager : MonoBehaviour
     }
     private void PossibleMove(SOPiece so, Vector2Int position, GameObject[,] boardarray)
     {
+        tempBoardArray = boardarray;
         List<Vector2Int> validMoves = new List<Vector2Int>();
-
         /* 
          * quelle est mouvement peut faire la piece 
          * pour chaque mouvement qu'elle peut faire on verifie si le coup est valide si il n'est pas en dehors et si il n'arrive pas sur un allié
@@ -36,18 +36,18 @@ public class MoveManager : MonoBehaviour
         [2,0 2,1 2,2]
         [1,0 1,1 1,2]
         [0,0 0,1 0,2] 
+         
          */
-
         int[] deltaX = { -1,  0,  1, -1, 0, 1,-1, 0 ,1};
         int[] deltaY = { -1, -1, -1,  0, 0, 0, 1, 1 ,1};
         
-        for (int i = 0; i < so.PossibleMoves.Count; i++)
+        for (int i = 0;i < so.PossibleMoves.Count;i++)
         {
             if (so.PossibleMoves[i])
             {
                 int newX = position.x + deltaX[i];
                 int newY = position.y + deltaY[i];
-                if (IsInsideBoard(newX,newY))
+                if (IsInsideBoard(newX,newY) && IsCaseEmpty(new Vector2Int(newX,newY)))
                 {
                     validMoves.Add(new Vector2Int(newX,newY));
                 }
@@ -57,10 +57,22 @@ public class MoveManager : MonoBehaviour
         }
         possibilities(validMoves);
     }
-
     // Méthode pour vérifier si une position est à l'intérieur des limites du plateau
     private bool IsInsideBoard(int x, int y)
     {
         return x >= 0 && x < 5 && y >= 0 && y < 4; // 5 lignes (0 à 4) et 4 colonnes (0 à 3)
+    }
+
+    private bool IsCaseEmpty(Vector2Int pos)
+    {
+        //a ajouter la verification du "camp" de ce pion
+        if (tempBoardArray[pos.x, pos.y].transform.GetChild(0).gameObject)
+        {
+            // piece pion = tempBoardArray[pos.x, pos.y].transform.GetChild(0).gameObject.getcomponent<piece>()
+            //if   pion.player ==...
+            return false;
+        }
+       
+        return true;
     }
 }
