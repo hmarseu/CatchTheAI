@@ -129,6 +129,7 @@ public class BoardManager : MonoBehaviour
         // Instantiate a piece on a specified case
         boardArray[row, col].GetComponent<BoardCase>().PlacePiece(selectedPiece);
         selectedPiece = null;
+        UpdateTilesClickability(null);
     }
 
 
@@ -207,61 +208,39 @@ public class BoardManager : MonoBehaviour
 
     public void UpdateTilesClickability(List<Vector2Int> possibleMoves)
     {
-        Debug.Log("have a selected piece");
-        if (possibleMoves != null)
-        {
-            Debug.Log("List de move : ");
-            foreach (Vector2Int moves in possibleMoves)
-            {
-                Debug.Log(moves);
-            }
-        }
-        // go through the board
+        if (possibleMoves != null) Debug.Log("nb of possible moves : " + possibleMoves.Count);
+
+        // Go through the board
         for (int i = 0; i < numberOfRows; i++)
         {
             for (int j = 0; j < numberOfColumns; j++)
             {
-                // get the piece
-                GameObject oneOfTheCases = boardArray[i, j];
+                // Get the piece info
                 Vector2Int position = new Vector2Int(i, j);
-                bool isEmpty = !GetPieceAtPosition(position);
+                GameObject currentCase = boardArray[position.x, position.y];
+                bool isEmpty = GetPieceAtPosition(position) == null;
 
-                // no selected piece - nothing done yet
+                // No selected piece - nothing done yet
                 if (!selectedPiece)
                 {
-                    if (isEmpty) // TODO // && isAllyPiece(piece)
+                    currentCase.GetComponent<BoardCase>().isClickable = !isEmpty;
+                }
+                // Already selected the piece to move
+                else
+                {
+                    if (possibleMoves != null)
                     {
-                        oneOfTheCases.GetComponent<BoardCase>().isClickable = false;
-                        Debug.Log("have nothing on the case");
+                        bool isClickable = possibleMoves.Contains(position);
+                        currentCase.GetComponent<BoardCase>().isClickable = isClickable;
                     }
                     else
                     {
-                        oneOfTheCases.GetComponent<BoardCase>().isClickable = true;
-                        Debug.Log("have something on the case");
+                        return;
                     }
-                }
-                // already selected the piece to move
-                else
-                {
-                    Debug.Log("have a selected piece");
-                    if (possibleMoves != null)
-                    {
-                        foreach (Vector2Int move in possibleMoves)
-                        {
-                            if (move == position)
-                            {
-                                oneOfTheCases.GetComponent<BoardCase>().isClickable = true;
-                            }
-                            else
-                            {
-                                oneOfTheCases.GetComponent<BoardCase>().isClickable = false;
-                            }
-                        }
-                    }
-                    else return;
                 }
             }
         }
     }
+
 
 }
