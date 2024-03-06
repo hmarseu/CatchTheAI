@@ -28,14 +28,5 @@ namespace catchTheAI
             // Ajouter le bouton au cimetière
             buttonPrefab.transform.SetParent(cemetery.transform, false);
         }
-
-        // Méthode pour retirer une pièce du cimetière
-        public void RemovePieceFromCemetery(GameObject piece, int playerId)
-        {
-            if (playerId == 1)
-                Destroy(piece);
-            else if (playerId == 2)
-                Destroy(piece);
-        }
     }
 }

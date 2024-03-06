@@ -13,17 +13,35 @@ namespace catchTheAI
         public delegate void CemeteryClicked(GameObject associatedPiece);
         public static event CemeteryClicked selectPiece;
 
-        public void clickOnCemeteryPiece()
+        public void ClickOnCemeteryPiece()
         {
            selectPiece(associatedPiece);
+        }
+
+        private void OnEnable()
+        {
+            BoardManager.removeButtonCemetary += RemoveButton;
+        }
+
+        private void OnDisable()
+        {
+            BoardManager.removeButtonCemetary -= RemoveButton;
         }
 
         public void Setup(Sprite image, GameObject piece)
         {
             associatedPiece = piece;
             pieceImage = image;
-            GetComponent<Button>().onClick.AddListener(clickOnCemeteryPiece);
+            GetComponent<Button>().onClick.AddListener(ClickOnCemeteryPiece);
             this.gameObject.GetComponent<Image>().sprite = pieceImage;
+        }
+
+        private void RemoveButton(GameObject selectedPiece)
+        {
+            if (selectedPiece == associatedPiece)
+            {
+                Destroy(this.gameObject);
+            }
         }
     }
 }

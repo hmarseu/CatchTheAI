@@ -24,6 +24,8 @@ public class BoardManager : MonoBehaviour
     private BoardCase boardCase;
     private GameObject[,] boardArray; // Array that represent the board
 
+    private bool isParachuting;
+
     private void Awake()
     {
         boardCase = casePrefab.GetComponent<BoardCase>();
@@ -121,11 +123,7 @@ public class BoardManager : MonoBehaviour
     }
 
 
-    /// <summary>
-    /// Places the selected GameObject piece at a specific position on the board.
-    /// </summary>
-    /// <param name="position">The position on the board where to place the piece (row, column). Indices start from 0.</param>
-    /// <remarks> ex: "PlacePiece(piecePrefab, new Vector2Int(0, 2));"</remarks>
+    // Create the selected GameObject piece at a specific position on the board.
     public void PlacePiece(Vector2Int position)
     {
         int row = position.x;
@@ -141,10 +139,19 @@ public class BoardManager : MonoBehaviour
         StartCoroutine(DelayedUpdateTilesClickability());
     }
 
+    public delegate void CemeteryRemove(GameObject selectedPiece);
+    public static event CemeteryRemove removeButtonCemetary;
+
+    // to move a piece to a new position
     public void MovePiece(Vector2Int position)
     {
         int row = position.x;
         int col = position.y;
+
+        if (isParachuting)
+        {
+            removeButtonCemetary(selectedPiece);
+        }
 
         // check if there is already a piece
         HandleEatingPiece(position);
@@ -152,7 +159,7 @@ public class BoardManager : MonoBehaviour
         // place the selected piece on the new case
         boardArray[row, col].GetComponent<BoardCase>().MovePiece(selectedPiece);
         selectedPiece = null;
-        // TODO remove btn of the UI if parachutage = true (?)
+
 
         StartCoroutine(DelayedUpdateTilesClickability());
     }
@@ -165,11 +172,7 @@ public class BoardManager : MonoBehaviour
     }
 
 
-    /// <summary>
-    /// Removes a the piece at a specific position on the board.
-    /// </summary>
-    /// <param name="position">The position on the board where to remove the piece (row, column). Indices start from 0.</param>
-    /// <remarks> ex: "RemovePiece(new Vector2Int(0, 2));"</remarks>
+    // Removes a the piece at a specific position on the board.
     public void RemovePiece(Vector2Int position)
     {
         int row = position.x;
@@ -206,7 +209,6 @@ public class BoardManager : MonoBehaviour
     {
         if(selectedPiece)
         {
-            RemovePiece(selectedPiecePosition);
             MovePiece(clickedPosition);
         }
         else
@@ -247,6 +249,8 @@ public class BoardManager : MonoBehaviour
 
     public void UpdateTilesClickability(List<Vector2Int> possibleMoves = null, bool parachuting = false)
     {
+        isParachuting = parachuting;
+
         // Go through the board
         for (int i = 0; i < numberOfRows; i++)
         {
