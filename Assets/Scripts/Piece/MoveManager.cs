@@ -47,13 +47,14 @@ public class MoveManager : MonoBehaviour
             {
                 int newX = position.x + deltaX[i];
                 int newY = position.y + deltaY[i];
-                if (IsInsideBoard(newX,newY) && IsCaseEmpty(new Vector2Int(newX,newY)))
+                if (IsInsideBoard(newX,newY))
                 {
-                    validMoves.Add(new Vector2Int(newX,newY));
+                    if (IsCaseEmpty(new Vector2Int(newX, newY)))
+                    {
+                        validMoves.Add(new Vector2Int(newX,newY));
+                    }
                 }
-              
-            }
-          
+            }        
         }
         possibilities(validMoves);
     }
