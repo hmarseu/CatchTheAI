@@ -5,8 +5,10 @@ using Unity.VisualScripting;
 using UnityEditor.TextCore.Text;
 using UnityEngine;
 using UnityEngine.UIElements;
+using YokaiNoMori.Enumeration;
+using YokaiNoMori.Interface;
 
-public class BoardManager : MonoBehaviour
+public class BoardManager : MonoBehaviour, IGameManager
 {
     [SerializeField] private GameObject casePrefab;
     [SerializeField] private int numberOfRows;
@@ -21,21 +23,63 @@ public class BoardManager : MonoBehaviour
     private BoardCase boardCase;
     private GameObject[,] boardArray; // Array that represent the board
 
+    public Player player1;
+    public Player player2;
+
+    public Player currentPlayerTurn;
+
+    private void SetPlayerPiece()
+    {
+        //boardArray[0,0].transform.GetChild(0).GetComponent<Piece>().player = player1;
+        //Piece[] pieces = GameObject.FindObjectsOfType<Piece>();
+        //for (int i = 0; i < pieces.Length; i++)
+        //{
+        //    if (i < 4)
+        //    {
+        //        pieces[i].player = player1;
+        //    }
+        //    else
+        //    {
+        //        pieces[i].player = player2;
+        //    }
+        //}
+
+    }
     private void Awake()
     {
         boardCase = casePrefab.GetComponent<BoardCase>();
+   
     }
 
     private void Start()
     {
+        CreationOfPlayer();
         GenerateBoard();
         StartFillArray();
         UpdateTilesClickability(null);
         LogBoardArray();
     }
+    private void CreationOfPlayer()
+    {
+        ECampType pl1 = ECampType.PLAYER_ONE;
+        ECampType pl2 = ECampType.PLAYER_TWO;
 
+        player1 = GameObject.Find("Player1").GetComponent<Player>();
+        player2 = GameObject.Find("Player2").GetComponent<Player>();
+        player1.SetCamp(pl1);
+        player1.SetName("joueur 1");
+        player2.SetCamp(pl2);
+        player2.SetName("joueur 2");
+
+        currentPlayerTurn = player1;
+        Debug.Log($"player 1 {player1.GetName()} player 2 {player2.GetName()} et current player {currentPlayerTurn.GetName()}");
+        //player1.StartTurn();
+
+        SetPlayerPiece();
+    }
     private void StartFillArray()
     {
+        
         selectedPiece = pionDictionary[0];
         PlacePiece(new Vector2Int(0, 0));
         selectedPiece = pionDictionary[0];
@@ -113,7 +157,7 @@ public class BoardManager : MonoBehaviour
                     rowContent += ", ";
                 }
             }
-            Debug.Log(i + ": " + rowContent);
+            //Debug.Log(i + ": " + rowContent);
         }
     }
 
@@ -170,22 +214,23 @@ public class BoardManager : MonoBehaviour
         MoveManager.possibilities -= UpdateTilesClickability;
     }
 
-
-    public delegate void transferPionToMovementManager(SOPiece pion, Vector2Int position, GameObject[,] boardArray);
+    //move manager
+    public delegate void transferPionToMovementManager(SOPiece pion, Vector2Int position, GameObject[,] boardArray,Player player);
     public static event transferPionToMovementManager transferPion;
 
     public void OnCaseClicked(Vector2Int clickedPosition)
     {
+        
         GameObject piece = GetPieceAtPosition(clickedPosition);
         // got a piece on it
         if (piece)
         {
-            Debug.Log("piece : " + piece + "position : " + clickedPosition);
+            //Debug.Log("piece : " + piece + "position : " + clickedPosition);
             selectedPiece = piece;
             selectedPiecePosition = clickedPosition;
 
             SOPiece soPiece = selectedPiece.GetComponent<Piece>().soPiece;
-            transferPion(soPiece, clickedPosition, boardArray);
+            transferPion(soPiece, clickedPosition, boardArray,currentPlayerTurn);
         }
         else
         {
@@ -196,9 +241,22 @@ public class BoardManager : MonoBehaviour
             }
             RemovePiece(selectedPiecePosition);
             PlacePiece(clickedPosition);
+            ChangeTurn();
         }
     }
-
+    private void ChangeTurn()
+    {
+        Debug.Log(currentPlayerTurn.GetName());
+        if (currentPlayerTurn== player1)
+        {
+            currentPlayerTurn = player2;
+        }
+        else
+        {
+            currentPlayerTurn = player1;
+        }
+        UpdateTilesClickability();
+    }
     private GameObject GetPieceAtPosition(Vector2Int position)
     {
         int row = position.x;
@@ -221,6 +279,9 @@ public class BoardManager : MonoBehaviour
 
     public void UpdateTilesClickability(List<Vector2Int> possibleMoves = null)
     {
+       
+        // si la piece appartient au joueur dont c'est le tour clickable sinon non clickable
+
         // Go through the board
         for (int i = 0; i < numberOfRows; i++)
         {
@@ -229,15 +290,21 @@ public class BoardManager : MonoBehaviour
                 // Get the piece info
                 Vector2Int position = new Vector2Int(i, j);
                 GameObject currentCase = boardArray[position.x, position.y];
-                bool isEmpty = GetPieceAtPosition(position) == null;
-
-                // No selected piece - nothing done yet
-                if (!selectedPiece)
+                BoardCase boardCase = currentCase.GetComponent<BoardCase>();
+                GameObject pieceAtPosition = GetPieceAtPosition(position);
+                if (pieceAtPosition!=null)
                 {
-                    currentCase.GetComponent<BoardCase>().isClickable = !isEmpty;
+                   
+                    if (pieceAtPosition.GetComponent<Piece>().player == currentPlayerTurn && !selectedPiece)
+                    {
+                        boardCase.isClickable = true;
+                    }
+                    else
+                    {
+                        boardCase.isClickable = false;
+                    }
                 }
-                // Already selected the piece to move
-                else
+                else if(!selectedPiece)
                 {
                     if (possibleMoves != null)
                     {
@@ -252,5 +319,20 @@ public class BoardManager : MonoBehaviour
                 }
             }
         }
+    }
+
+    public List<IPawn> GetAllPawn()
+    {
+        throw new NotImplementedException();
+    }
+
+    public List<IBoardCase> GetAllBoardCase()
+    {
+        throw new NotImplementedException();
+    }
+
+    public void DoAction(IPawn pawnTarget, Vector2Int position, EActionType actionType)
+    {
+        throw new NotImplementedException();
     }
 }

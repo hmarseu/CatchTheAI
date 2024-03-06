@@ -2,12 +2,14 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Numerics;
 using UnityEngine;
+using YokaiNoMori.Enumeration;
+using YokaiNoMori.Interface;
 
-public class Piece : MonoBehaviour
+public class Piece : MonoBehaviour,IPawn
 {
     public SOPiece soPiece;
-    
-    public short idPlayer;
+    public Player player;
+   
     protected short idPiece;
 
     private void Start()
@@ -22,6 +24,24 @@ public class Piece : MonoBehaviour
     {
         // sors du terrain
     }
-    
-   
+
+    public List<Vector2Int> GetDirections()
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public ICompetitor GetCurrentOwner()
+    {
+        return player;
+    }
+
+    public IBoardCase GetCurrentBoardCase()
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public EPawnType GetPawnType()
+    {
+        return soPiece.ePawnType;
+    }
 }

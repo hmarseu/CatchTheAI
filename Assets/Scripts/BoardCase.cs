@@ -17,7 +17,7 @@ public class BoardCase : MonoBehaviour
     {
         if (isClickable)
         {
-            Debug.Log("CLICK");
+            //Debug.Log("CLICK");
             caseClicked(positionInBoard);
         }
     }

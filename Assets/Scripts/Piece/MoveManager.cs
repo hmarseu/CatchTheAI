@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using YokaiNoMori.Interface;
 
 public class MoveManager : MonoBehaviour
 {
@@ -16,7 +17,7 @@ public class MoveManager : MonoBehaviour
     {
         BoardManager.transferPion -= PossibleMove;
     }
-    private void PossibleMove(SOPiece so, Vector2Int position, GameObject[,] boardarray)
+    private void PossibleMove(SOPiece so, Vector2Int position, GameObject[,] boardarray,Player joueur)
     {
         tempBoardArray = boardarray;
         List<Vector2Int> validMoves = new List<Vector2Int>();
@@ -49,18 +50,18 @@ public class MoveManager : MonoBehaviour
                 int newY = position.y + deltaY[i];
                 if (IsInsideBoard(newX,newY))
                 {
-                    // Debug.Log("INSIDE : x=" + newX + " y=" + newY);
-                    if (IsCaseEmpty(new Vector2Int(newX, newY)))
+                    
+                    if (IsReachable(new Vector2Int(newX, newY),joueur))
                     {
                         validMoves.Add(new Vector2Int(newX,newY));
                     }
                 }
-                // else Debug.Log("NOT INSIDE : x=" + newX + " y=" + newY);
+               
             }        
         }
         possibilities(validMoves);
     }
-    // Méthode pour vérifier si une position est à l'intérieur des limites du plateau
+    
     private bool IsInsideBoard(int x, int y)
     {
         if (tempBoardArray.Length <= 0)
@@ -74,16 +75,19 @@ public class MoveManager : MonoBehaviour
         return x >= 0 && x < numRows && y >= 0 && y < numCols;
     }
 
-    private bool IsCaseEmpty(Vector2Int pos)
+    private bool IsReachable(Vector2Int pos,ICompetitor player)
     {
         //a ajouter la verification du "camp" de ce pion
         if (tempBoardArray[pos.x, pos.y].transform.childCount > 0)
         {
             Transform childTransform = tempBoardArray[pos.x, pos.y].transform.GetChild(0);
 
-            // piece pion = tempBoardArray[pos.x, pos.y].transform.GetChild(0).gameObject.getcomponent<piece>()
-            //if   pion.player ==...
-            return false;
+            Piece pion = tempBoardArray[pos.x, pos.y].transform.GetChild(0).gameObject.GetComponent<Piece>();
+            if  ( pion.player == player)
+            {
+                return false;
+            }
+            return true;
         }
        
         return true;
