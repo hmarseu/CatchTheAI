@@ -19,6 +19,7 @@ public class MoveManager : MonoBehaviour
     private void PossibleMove(SOPiece so, Vector2Int position, GameObject[,] boardarray)
     {
         List<Vector2Int> validMoves = new List<Vector2Int>();
+
         /* 
          * quelle est mouvement peut faire la piece 
          * pour chaque mouvement qu'elle peut faire on verifie si le coup est valide si il n'est pas en dehors et si il n'arrive pas sur un allié
@@ -35,12 +36,12 @@ public class MoveManager : MonoBehaviour
         [2,0 2,1 2,2]
         [1,0 1,1 1,2]
         [0,0 0,1 0,2] 
-         
          */
+
         int[] deltaX = { -1,  0,  1, -1, 0, 1,-1, 0 ,1};
         int[] deltaY = { -1, -1, -1,  0, 0, 0, 1, 1 ,1};
         
-        for (int i = 0;i <= so.PossibleMoves.Count;i++)
+        for (int i = 0; i < so.PossibleMoves.Count; i++)
         {
             if (so.PossibleMoves[i])
             {
@@ -56,6 +57,7 @@ public class MoveManager : MonoBehaviour
         }
         possibilities(validMoves);
     }
+
     // Méthode pour vérifier si une position est à l'intérieur des limites du plateau
     private bool IsInsideBoard(int x, int y)
     {

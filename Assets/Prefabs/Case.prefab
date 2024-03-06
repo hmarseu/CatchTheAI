@@ -51,7 +51,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isClickable: 0
-  boardManager: {fileID: 0}
 --- !u!212 &6499181868570513970
 SpriteRenderer:
   m_ObjectHideFlags: 0
