@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEditor.TextCore.Text;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -84,7 +85,8 @@ public class BoardManager : MonoBehaviour
     // debug
     public void LogBoardArray()
     {
-        if (boardArray == null) {
+        if (boardArray == null)
+        {
             Debug.LogWarning("The board array is null.");
             return;
         }
@@ -129,6 +131,15 @@ public class BoardManager : MonoBehaviour
         // Instantiate a piece on a specified case
         boardArray[row, col].GetComponent<BoardCase>().PlacePiece(selectedPiece);
         selectedPiece = null;
+
+        StartCoroutine(DelayedUpdateTilesClickability());
+
+    }
+
+    // had to because its faster than the destroy child
+    private IEnumerator DelayedUpdateTilesClickability()
+    {
+        yield return new WaitForSeconds(0.1f);
         UpdateTilesClickability(null);
     }
 
@@ -197,8 +208,10 @@ public class BoardManager : MonoBehaviour
         {
             if (boardArray[row, col] != null && boardArray[row, col].transform.childCount > 0)
             {
+                Debug.LogWarning("position : " + position + " nb of child : " + boardArray[row, col].transform.childCount);
                 // return the piece GameObject if it exists in the specified position
                 return boardArray[row, col].transform.GetChild(0).gameObject;
+
             }
         }
 
@@ -206,10 +219,8 @@ public class BoardManager : MonoBehaviour
         return null;
     }
 
-    public void UpdateTilesClickability(List<Vector2Int> possibleMoves)
+    public void UpdateTilesClickability(List<Vector2Int> possibleMoves = null)
     {
-        if (possibleMoves != null) Debug.Log("nb of possible moves : " + possibleMoves.Count);
-
         // Go through the board
         for (int i = 0; i < numberOfRows; i++)
         {
@@ -235,12 +246,11 @@ public class BoardManager : MonoBehaviour
                     }
                     else
                     {
+                        currentCase.GetComponent<BoardCase>().isClickable = false;
                         return;
                     }
                 }
             }
         }
     }
-
-
 }

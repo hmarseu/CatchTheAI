@@ -46,7 +46,7 @@ public class BoardCase : MonoBehaviour
         GameObject newPiece = Instantiate(piece, transform.position, Quaternion.identity);
         newPiece.transform.parent = transform;
         newPiece.transform.localScale = piece.transform.localScale;
-
+        newPiece.name = piece.name;
     }
 
     public void RemovePiece()
