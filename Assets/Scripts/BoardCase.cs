@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -8,14 +9,17 @@ public class BoardCase : MonoBehaviour
 {
     public bool isClickable = false;
     private Vector2Int positionInBoard;
-    [SerializeField] private BoardManager boardManager;
 
     public delegate void onClick(Vector2Int positionInBoard);
     public static event onClick caseClicked;
 
-    public void OnPointerClick()
+    public void OnMouseDown()
     {
-        caseClicked(positionInBoard);
+        if (isClickable)
+        {
+            Debug.Log("CLICK");
+            caseClicked(positionInBoard);
+        }
     }
 
     public Vector2 GetSize()

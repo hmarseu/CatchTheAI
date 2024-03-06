@@ -13,6 +13,8 @@ public class BoardManager : MonoBehaviour
     [SerializeField] private float verticalSpacing;
     [SerializeField] private List<GameObject> pionDictionary;
 
+    private GameObject selectedPiece;
+
     private BoardCase boardCase;
     private GameObject[,] boardArray; // Array that represent the board
 
@@ -30,15 +32,21 @@ public class BoardManager : MonoBehaviour
 
     private void StartFillArray()
     {
-        PlacePiece(pionDictionary[0], new Vector2Int(0, 0));
-        PlacePiece(pionDictionary[1], new Vector2Int(0, 1));
-        PlacePiece(pionDictionary[2], new Vector2Int(0, 2));
-        PlacePiece(pionDictionary[3], new Vector2Int(1, 1));
+        selectedPiece = pionDictionary[0];
+        PlacePiece(new Vector2Int(0, 0));
+        PlacePiece(new Vector2Int(3, 0));
 
-        PlacePiece(pionDictionary[0], new Vector2Int(3, 0));
-        PlacePiece(pionDictionary[1], new Vector2Int(3, 1));
-        PlacePiece(pionDictionary[2], new Vector2Int(3, 2));
-        PlacePiece(pionDictionary[3], new Vector2Int(2, 1));
+        selectedPiece = pionDictionary[1];
+        PlacePiece(new Vector2Int(0, 1));
+        PlacePiece(new Vector2Int(3, 1));
+
+        selectedPiece = pionDictionary[2];
+        PlacePiece(new Vector2Int(0, 2));
+        PlacePiece(new Vector2Int(3, 2));
+
+        selectedPiece = pionDictionary[3];
+        PlacePiece(new Vector2Int(2, 1));
+        PlacePiece(new Vector2Int(1, 1));
     }
 
     private void GenerateBoard()
@@ -93,28 +101,26 @@ public class BoardManager : MonoBehaviour
 
                 if (j < numCols - 1)
                 {
-                    rowContent += " | ";
+                    rowContent += ", ";
                 }
             }
-            Debug.Log(" _  _  _ ");
             Debug.Log(i + ": " + rowContent);
         }
     }
 
 
     /// <summary>
-    /// Places a GameObject piece at a specific position on the board.
+    /// Places the selected GameObject piece at a specific position on the board.
     /// </summary>
-    /// <param name="piece">The GameObject representing the piece to place.</param>
     /// <param name="position">The position on the board where to place the piece (row, column). Indices start from 0.</param>
     /// <remarks> ex: "PlacePiece(piecePrefab, new Vector2Int(0, 2));"</remarks>
-    public void PlacePiece(GameObject piece, Vector2Int position)
+    public void PlacePiece(Vector2Int position)
     {
         int row = position.x;
         int col = position.y;
 
         // Instantiate a piece on a specified case
-        boardArray[row, col].GetComponent<BoardCase>().PlacePiece(piece);
+        boardArray[row, col].GetComponent<BoardCase>().PlacePiece(selectedPiece);
     }
 
 
@@ -135,28 +141,33 @@ public class BoardManager : MonoBehaviour
     private void OnEnable()
     {
         BoardCase.caseClicked += OnCaseClicked;
+        MoveManager.possibilities += UpdateTilesClickability;
     }
 
     private void OnDisable()
     {
         BoardCase.caseClicked -= OnCaseClicked;
+        MoveManager.possibilities -= UpdateTilesClickability;
     }
 
 
-    public delegate void transferPionToMovementManager(SOPiece pion, Vector2Int position,GameObject[,] boardArray);
+    public delegate void transferPionToMovementManager(SOPiece pion, Vector2Int position, GameObject[,] boardArray);
     public static event transferPionToMovementManager transferPion;
 
     public void OnCaseClicked(Vector2Int position)
     {
         // get the piece at the clicked position
         GameObject piece = GetPieceAtPosition(position);
-        SOPiece soPiece = piece.GetComponent<SOPiece>();
 
         if (piece != null) // && verify if its an ally // TODO
         {
             // return boardArray + piece
-            transferPion(soPiece, position,boardArray);
+            SOPiece soPiece = piece.GetComponent<Piece>().soPiece;
+
+            if (soPiece != null) transferPion(soPiece, position, boardArray);
+            else Debug.LogError("soPiece null !");
         }
+        else Debug.LogError("piece null !");
     }
 
     private GameObject GetPieceAtPosition(Vector2Int position)
@@ -175,6 +186,47 @@ public class BoardManager : MonoBehaviour
 
         // no piece found
         return null;
+    }
+
+    public void UpdateTilesClickability(List<Vector2Int> possibleMoves)
+    {
+        // go through the board
+        for (int i = 0; i < numberOfRows; i++)
+        {
+            for (int j = 0; j < numberOfColumns; j++)
+            {
+                // get the piece
+                GameObject piece = GetPieceAtPosition(new Vector2Int(i, j));
+
+                // no selected piece - nothing done yet
+                if (!selectedPiece)
+                {
+                    if (piece != null) // TODO // && isAllyPiece(piece)
+                    {
+                        piece.GetComponent<BoardCase>().isClickable = true;
+                    }
+                    else
+                    {
+                        piece.GetComponent<BoardCase>().isClickable = false;
+                    }
+                }
+                // already selected the piece to move
+                else
+                {
+                    foreach (Vector2Int move in possibleMoves)
+                    {
+                        if (move == new Vector2Int(i, j))
+                        {
+                            piece.GetComponent<BoardCase>().isClickable = true;
+                        }
+                        else
+                        {
+                            piece.GetComponent<BoardCase>().isClickable = false;
+                        }
+                    }
+                }
+            }
+        }
     }
 
 }
