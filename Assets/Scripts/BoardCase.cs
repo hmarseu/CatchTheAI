@@ -41,7 +41,15 @@ public class BoardCase : MonoBehaviour
         return new Vector2(caseWidth, caseHeight);
     }
 
-    public void PlacePiece(GameObject piece)
+    public void MovePiece(GameObject piece)
+    {
+        // Changer le parent de la pièce pour la placer dans la case
+        piece.transform.SetParent(transform);
+        piece.transform.localPosition = Vector3.zero; // Réinitialiser la position locale
+        piece.name = piece.name; // Optionnel : Mettre à jour le nom de l'objet
+    }
+
+    public void InstantiatePiece(GameObject piece)
     {
         GameObject newPiece = Instantiate(piece, transform.position, Quaternion.identity);
         newPiece.transform.parent = transform;
@@ -50,6 +58,14 @@ public class BoardCase : MonoBehaviour
     }
 
     public void RemovePiece()
+    {
+        foreach (Transform child in transform)
+        {
+            child.SetParent(null);
+        }
+    }
+
+    public void DestroyPiece()
     {
         foreach (Transform child in transform)
         {

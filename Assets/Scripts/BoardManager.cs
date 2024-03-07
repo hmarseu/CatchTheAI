@@ -1,3 +1,4 @@
+using catchTheAI;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -11,6 +12,8 @@ using YokaiNoMori.Interface;
 public class BoardManager : MonoBehaviour, IGameManager
 {
     [SerializeField] private GameObject casePrefab;
+    [SerializeField] private CemeteryManager cemeteryManager;
+
     [SerializeField] private int numberOfRows;
     [SerializeField] private int numberOfColumns;
     [SerializeField] private float horizontalSpacing;
@@ -57,6 +60,8 @@ public class BoardManager : MonoBehaviour, IGameManager
         
 
     }
+    private bool isParachuting;
+
     private void Awake()
     {
         boardCase = casePrefab.GetComponent<BoardCase>();
@@ -174,25 +179,49 @@ public class BoardManager : MonoBehaviour, IGameManager
     }
 
 
-    /// <summary>
-    /// Places the selected GameObject piece at a specific position on the board.
-    /// </summary>
-    /// <param name="position">The position on the board where to place the piece (row, column). Indices start from 0.</param>
-    /// <remarks> ex: "PlacePiece(piecePrefab, new Vector2Int(0, 2));"</remarks>
+    // Create the selected GameObject piece at a specific position on the board.
     public void PlacePiece(Vector2Int position)
     {
         int row = position.x;
         int col = position.y;
 
-        // Instantiate a piece on a specified case
-        boardArray[row, col].GetComponent<BoardCase>().PlacePiece(selectedPiece);
+        // check if there is already a piece
+        HandleEatingPiece(position);
+
+        // place the selected piece on the new case
+        boardArray[row, col].GetComponent<BoardCase>().InstantiatePiece(selectedPiece);
         selectedPiece = null;
 
         //StartCoroutine(DelayedUpdateTilesClickability());
         UpdateTilesClickability();
     }
 
-    // had to because its faster than the destroy child
+    public delegate void CemeteryRemove(GameObject selectedPiece);
+    public static event CemeteryRemove removeButtonCemetary;
+
+    // to move a piece to a new position
+    public void MovePiece(Vector2Int position)
+    {
+        int row = position.x;
+        int col = position.y;
+
+        if (isParachuting)
+        {
+            removeButtonCemetary(selectedPiece);
+        }
+
+        // check if there is already a piece
+        HandleEatingPiece(position);
+
+        // place the selected piece on the new case
+        boardArray[row, col].GetComponent<BoardCase>().MovePiece(selectedPiece);
+        selectedPiece = null;
+
+
+        StartCoroutine(DelayedUpdateTilesClickability());
+    }
+
+    // had to because its faster than to destroy the child
     private IEnumerator DelayedUpdateTilesClickability()
     {
         yield return new WaitForSeconds(0.1f);
@@ -200,11 +229,7 @@ public class BoardManager : MonoBehaviour, IGameManager
     }
 
 
-    /// <summary>
-    /// Removes a the piece at a specific position on the board.
-    /// </summary>
-    /// <param name="position">The position on the board where to remove the piece (row, column). Indices start from 0.</param>
-    /// <remarks> ex: "RemovePiece(new Vector2Int(0, 2));"</remarks>
+    // Removes a the piece at a specific position on the board.
     public void RemovePiece(Vector2Int position)
     {
         int row = position.x;
@@ -217,17 +242,24 @@ public class BoardManager : MonoBehaviour, IGameManager
     private void OnEnable()
     {
         BoardCase.caseClicked += OnCaseClicked;
+        CemeteryButton.selectPiece += PrepareParachuting;
         MoveManager.possibilities += UpdateTilesClickability;
     }
 
     private void OnDisable()
     {
         BoardCase.caseClicked -= OnCaseClicked;
+        CemeteryButton.selectPiece -= PrepareParachuting;
         MoveManager.possibilities -= UpdateTilesClickability;
     }
 
-    //move manager
-    public delegate void transferPionToMovementManager(SOPiece pion, Vector2Int position, GameObject[,] boardArray,Player player);
+    public void PrepareParachuting(GameObject piece)
+    {
+        selectedPiece = piece;
+        UpdateTilesClickability(null, true);
+    }
+
+    public delegate void transferPionToMovementManager(SOPiece pion, Vector2Int position, GameObject[,] boardArray);
     public static event transferPionToMovementManager transferPion;
 
     public void OnCaseClicked(Vector2Int clickedPosition)
@@ -235,25 +267,26 @@ public class BoardManager : MonoBehaviour, IGameManager
         
         GameObject piece = GetPieceAtPosition(clickedPosition);
         // got a piece on it
-        if (piece)
+        
+        if(selectedPiece)
         {
-            //Debug.Log("piece : " + piece + "position : " + clickedPosition);
-            selectedPiece = piece;
-            selectedPiecePosition = clickedPosition;
-
-            SOPiece soPiece = selectedPiece.GetComponent<Piece>().soPiece;
-            transferPion(soPiece, clickedPosition, boardArray,currentPlayerTurn);
+            MovePiece(clickedPosition);
+            ChangeTurn();
         }
         else
         {
-            if (!selectedPiece)
+            GameObject piece = GetPieceAtPosition(clickedPosition);
+            // got a piece on it
+            if (piece)
             {
-                Debug.LogError("Selected piece is empty");
-                return;
+                Debug.Log("piece : " + piece + "position : " + clickedPosition);
+                selectedPiece = piece;
+                selectedPiecePosition = clickedPosition;
+
+                SOPiece soPiece = selectedPiece.GetComponent<Piece>().soPiece;
+                transferPion(soPiece, clickedPosition, boardArray,currentPlayerTurn);
             }
-            RemovePiece(selectedPiecePosition);
-            PlacePiece(clickedPosition);
-            ChangeTurn();
+            
         }
     }
     private void ChangeTurn()
@@ -278,7 +311,7 @@ public class BoardManager : MonoBehaviour, IGameManager
         {
             if (boardArray[row, col] != null && boardArray[row, col].transform.childCount > 0)
             {
-                Debug.LogWarning("position : " + position + " nb of child : " + boardArray[row, col].transform.childCount);
+                // Debug.LogWarning("position : " + position + " nb of child : " + boardArray[row, col].transform.childCount);
                 // return the piece GameObject if it exists in the specified position
                 return boardArray[row, col].transform.GetChild(0).gameObject;
 
@@ -289,10 +322,9 @@ public class BoardManager : MonoBehaviour, IGameManager
         return null;
     }
 
-    public void UpdateTilesClickability(List<Vector2Int> possibleMoves = null)
+    public void UpdateTilesClickability(List<Vector2Int> possibleMoves = null, bool parachuting = false)
     {
-      
-        // si la piece appartient au joueur dont c'est le tour clickable sinon non clickable
+        isParachuting = parachuting;
 
         // Go through the board
         for (int i = 0; i < numberOfRows; i++)
@@ -303,8 +335,13 @@ public class BoardManager : MonoBehaviour, IGameManager
                 
                 Vector2Int position = new Vector2Int(i, j);
                 GameObject currentCase = boardArray[position.x, position.y];
+
                 BoardCase boardCase = currentCase.GetComponent<BoardCase>();
                 GameObject pieceAtPosition = GetPieceAtPosition(position);
+                bool isEmpty = pieceAtPosition == null;
+
+                
+               
                 if (pieceAtPosition!=null)
                 {
                    
@@ -317,18 +354,20 @@ public class BoardManager : MonoBehaviour, IGameManager
                         boardCase.isClickable = false;
                     }
                 }
-                else if(selectedPiece)
+                // If we are in a parachuting scenario and the piece is empty
+                else if (parachuting && isEmpty)
                 {
-                    if (possibleMoves != null)
-                    {
-                        bool isClickable = possibleMoves.Contains(position);
-                        currentCase.GetComponent<BoardCase>().isClickable = isClickable;
-                    }
-                    else
-                    {
-                        currentCase.GetComponent<BoardCase>().isClickable = false;
-                        return;
-                    }
+                    currentCase.GetComponent<BoardCase>().isClickable = true;
+                }
+                // If there are possible moves and the case is in the list of possible moves
+                else if (possibleMoves != null && possibleMoves.Contains(position))
+                {
+                    currentCase.GetComponent<BoardCase>().isClickable = true;
+                }
+                // Otherwise, the case is not clickable
+                else
+                {
+                    currentCase.GetComponent<BoardCase>().isClickable = false;
                 }
             }
         }
@@ -348,4 +387,16 @@ public class BoardManager : MonoBehaviour, IGameManager
     {
         throw new NotImplementedException();
     }
+    private void HandleEatingPiece(Vector2Int newPosition)
+    {
+        GameObject pieceToEat = GetPieceAtPosition(newPosition);
+        if (pieceToEat != null)
+        {
+            // Ajouter la pi�ce dans le cimeti�re
+            int playerId = pieceToEat.GetComponent<Piece>().idPlayer;
+            cemeteryManager.AddToCemetery(pieceToEat, playerId);
+        }
+    }
+
+
 }

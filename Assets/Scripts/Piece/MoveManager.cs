@@ -5,7 +5,7 @@ using YokaiNoMori.Interface;
 
 public class MoveManager : MonoBehaviour
 {
-    public delegate void Possibilities(List<Vector2Int> tabPossibilte);
+    public delegate void Possibilities(List<Vector2Int> tabPossibilte, bool parachuting);
     public static event Possibilities possibilities;
     private GameObject[,] tempBoardArray;
     private void OnEnable()
@@ -59,7 +59,7 @@ public class MoveManager : MonoBehaviour
                
             }        
         }
-        possibilities(validMoves);
+        possibilities(validMoves, false);
     }
     
     private bool IsInsideBoard(int x, int y)
@@ -77,6 +77,7 @@ public class MoveManager : MonoBehaviour
 
     private bool IsReachable(Vector2Int pos,ICompetitor player)
     {
+        return true; // temp
         //a ajouter la verification du "camp" de ce pion
         if (tempBoardArray[pos.x, pos.y].transform.childCount > 0)
         {
