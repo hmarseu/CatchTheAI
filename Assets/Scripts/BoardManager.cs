@@ -44,11 +44,13 @@ public class BoardManager : MonoBehaviour, IGameManager
                     {
                         
                         boardArray[i,j].transform.GetChild(0).GetComponent<Piece>().player = player1;
+                        boardArray[i, j].transform.GetChild(0).GetComponent<Piece>().idPlayer = 1;
                     }
                     else
                     {
                        
                         boardArray[i,j].transform.GetChild(0).GetComponent<Piece>().player = player2;
+                        boardArray[i, j].transform.GetChild(0).GetComponent<Piece>().idPlayer = 2;
                     }
 
                 }
@@ -74,7 +76,7 @@ public class BoardManager : MonoBehaviour, IGameManager
         StartFillArray();
         LogBoardArray();
         CreationOfPlayer();
-        UpdateTilesClickability(null);
+        UpdateTilesAtTurnChange();
     }
     private void CreationOfPlayer()
     {
@@ -216,18 +218,12 @@ public class BoardManager : MonoBehaviour, IGameManager
         // place the selected piece on the new case
         boardArray[row, col].GetComponent<BoardCase>().MovePiece(selectedPiece);
         selectedPiece = null;
+        //ChangeTurn();
 
-
-        StartCoroutine(DelayedUpdateTilesClickability());
+       
     }
 
-    // had to because its faster than to destroy the child
-    private IEnumerator DelayedUpdateTilesClickability()
-    {
-        yield return new WaitForSeconds(0.1f);
-        UpdateTilesClickability(null);
-    }
-
+  
 
     // Removes a the piece at a specific position on the board.
     public void RemovePiece(Vector2Int position)
@@ -259,13 +255,13 @@ public class BoardManager : MonoBehaviour, IGameManager
         UpdateTilesClickability(null, true);
     }
 
-    public delegate void transferPionToMovementManager(SOPiece pion, Vector2Int position, GameObject[,] boardArray);
+    public delegate void transferPionToMovementManager(SOPiece pion, Vector2Int position, GameObject[,] boardArray,Player player);
     public static event transferPionToMovementManager transferPion;
 
     public void OnCaseClicked(Vector2Int clickedPosition)
     {
         
-        GameObject piece = GetPieceAtPosition(clickedPosition);
+      
         // got a piece on it
         
         if(selectedPiece)
@@ -279,7 +275,7 @@ public class BoardManager : MonoBehaviour, IGameManager
             // got a piece on it
             if (piece)
             {
-                Debug.Log("piece : " + piece + "position : " + clickedPosition);
+                //Debug.Log("piece : " + piece + "position : " + clickedPosition);
                 selectedPiece = piece;
                 selectedPiecePosition = clickedPosition;
 
@@ -291,7 +287,6 @@ public class BoardManager : MonoBehaviour, IGameManager
     }
     private void ChangeTurn()
     {
-        //Debug.Log(currentPlayerTurn.GetName());
         if (currentPlayerTurn== player1)
         {
             currentPlayerTurn = player2;
@@ -300,7 +295,8 @@ public class BoardManager : MonoBehaviour, IGameManager
         {
             currentPlayerTurn = player1;
         }
-        UpdateTilesClickability();
+        Debug.Log(currentPlayerTurn.GetName());
+        UpdateTilesAtTurnChange();
     }
     private GameObject GetPieceAtPosition(Vector2Int position)
     {
@@ -311,8 +307,7 @@ public class BoardManager : MonoBehaviour, IGameManager
         {
             if (boardArray[row, col] != null && boardArray[row, col].transform.childCount > 0)
             {
-                // Debug.LogWarning("position : " + position + " nb of child : " + boardArray[row, col].transform.childCount);
-                // return the piece GameObject if it exists in the specified position
+               
                 return boardArray[row, col].transform.GetChild(0).gameObject;
 
             }
@@ -321,9 +316,37 @@ public class BoardManager : MonoBehaviour, IGameManager
         // no piece found
         return null;
     }
+    public void UpdateTilesAtTurnChange()
+    {
+        for (int i = 0; i < numberOfRows; i++)
+        {
+            for (int j = 0; j < numberOfColumns; j++)
+            {
 
+                Vector2Int position = new Vector2Int(i, j);
+                GameObject currentCase = boardArray[position.x, position.y];
+
+                BoardCase boardCase = currentCase.GetComponent<BoardCase>();
+                GameObject pieceAtPosition = GetPieceAtPosition(position);
+                if (pieceAtPosition!=null)
+                {
+                    if (pieceAtPosition.GetComponent<Piece>().player == currentPlayerTurn)
+                    {
+                        currentCase.GetComponent<BoardCase>().isClickable = true;
+
+                    }
+                    else
+                    {
+                        currentCase.GetComponent<BoardCase>().isClickable = false;
+                    }
+
+                }
+            }
+        }
+    }
     public void UpdateTilesClickability(List<Vector2Int> possibleMoves = null, bool parachuting = false)
     {
+        
         isParachuting = parachuting;
 
         // Go through the board
@@ -340,22 +363,8 @@ public class BoardManager : MonoBehaviour, IGameManager
                 GameObject pieceAtPosition = GetPieceAtPosition(position);
                 bool isEmpty = pieceAtPosition == null;
 
-                
-               
-                if (pieceAtPosition!=null)
-                {
-                   
-                    if (pieceAtPosition.GetComponent<Piece>().player == currentPlayerTurn && !selectedPiece)
-                    {
-                        boardCase.isClickable = true;
-                    }
-                    else
-                    {
-                        boardCase.isClickable = false;
-                    }
-                }
                 // If we are in a parachuting scenario and the piece is empty
-                else if (parachuting && isEmpty)
+                if (parachuting && isEmpty)
                 {
                     currentCase.GetComponent<BoardCase>().isClickable = true;
                 }

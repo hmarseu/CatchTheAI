@@ -54,6 +54,7 @@ public class MoveManager : MonoBehaviour
                     if (IsReachable(new Vector2Int(newX, newY),joueur))
                     {
                         validMoves.Add(new Vector2Int(newX,newY));
+                        
                     }
                 }
                
@@ -77,7 +78,7 @@ public class MoveManager : MonoBehaviour
 
     private bool IsReachable(Vector2Int pos,ICompetitor player)
     {
-        return true; // temp
+       
         //a ajouter la verification du "camp" de ce pion
         if (tempBoardArray[pos.x, pos.y].transform.childCount > 0)
         {
