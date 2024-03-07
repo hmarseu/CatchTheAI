@@ -13,4 +13,5 @@ MonoBehaviour:
   m_Name: Tanuki
   m_EditorClassIdentifier: 
   Image: {fileID: 21300000, guid: 0c18de18910bdf346bea6803db540540, type: 3}
+  ePawnType: 3
   PossibleMoves: 000100010001000100

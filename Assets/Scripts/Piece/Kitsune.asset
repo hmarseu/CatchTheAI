@@ -13,4 +13,5 @@ MonoBehaviour:
   m_Name: Kitsune
   m_EditorClassIdentifier: 
   Image: {fileID: 21300000, guid: 662ada2af78f77245afec78f715d442c, type: 3}
+  ePawnType: 2
   PossibleMoves: 010001000000010001

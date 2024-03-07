@@ -30,19 +30,31 @@ public class BoardManager : MonoBehaviour, IGameManager
 
     private void SetPlayerPiece()
     {
-        //boardArray[0,0].transform.GetChild(0).GetComponent<Piece>().player = player1;
-        //Piece[] pieces = GameObject.FindObjectsOfType<Piece>();
-        //for (int i = 0; i < pieces.Length; i++)
-        //{
-        //    if (i < 4)
-        //    {
-        //        pieces[i].player = player1;
-        //    }
-        //    else
-        //    {
-        //        pieces[i].player = player2;
-        //    }
-        //}
+    
+        for (int i = 0; i < numberOfRows; i++)
+        {
+            for (int j = 0; j < numberOfColumns; j++)
+            {
+                if (boardArray[i,j].transform.childCount>0)
+                {
+                    if (i<2)
+                    {
+                        
+                        boardArray[i,j].transform.GetChild(0).GetComponent<Piece>().player = player1;
+                    }
+                    else
+                    {
+                       
+                        boardArray[i,j].transform.GetChild(0).GetComponent<Piece>().player = player2;
+                    }
+
+                }
+              
+
+            }
+
+        }
+        
 
     }
     private void Awake()
@@ -53,11 +65,11 @@ public class BoardManager : MonoBehaviour, IGameManager
 
     private void Start()
     {
-        CreationOfPlayer();
         GenerateBoard();
         StartFillArray();
-        UpdateTilesClickability(null);
         LogBoardArray();
+        CreationOfPlayer();
+        UpdateTilesClickability(null);
     }
     private void CreationOfPlayer()
     {
@@ -72,7 +84,7 @@ public class BoardManager : MonoBehaviour, IGameManager
         player2.SetName("joueur 2");
 
         currentPlayerTurn = player1;
-        Debug.Log($"player 1 {player1.GetName()} player 2 {player2.GetName()} et current player {currentPlayerTurn.GetName()}");
+        //Debug.Log($"player 1 {player1.GetName()} player 2 {player2.GetName()} et current player {currentPlayerTurn.GetName()}");
         //player1.StartTurn();
 
         SetPlayerPiece();
@@ -176,8 +188,8 @@ public class BoardManager : MonoBehaviour, IGameManager
         boardArray[row, col].GetComponent<BoardCase>().PlacePiece(selectedPiece);
         selectedPiece = null;
 
-        StartCoroutine(DelayedUpdateTilesClickability());
-
+        //StartCoroutine(DelayedUpdateTilesClickability());
+        UpdateTilesClickability();
     }
 
     // had to because its faster than the destroy child
@@ -246,7 +258,7 @@ public class BoardManager : MonoBehaviour, IGameManager
     }
     private void ChangeTurn()
     {
-        Debug.Log(currentPlayerTurn.GetName());
+        //Debug.Log(currentPlayerTurn.GetName());
         if (currentPlayerTurn== player1)
         {
             currentPlayerTurn = player2;
@@ -279,7 +291,7 @@ public class BoardManager : MonoBehaviour, IGameManager
 
     public void UpdateTilesClickability(List<Vector2Int> possibleMoves = null)
     {
-       
+      
         // si la piece appartient au joueur dont c'est le tour clickable sinon non clickable
 
         // Go through the board
@@ -288,6 +300,7 @@ public class BoardManager : MonoBehaviour, IGameManager
             for (int j = 0; j < numberOfColumns; j++)
             {
                 // Get the piece info
+                
                 Vector2Int position = new Vector2Int(i, j);
                 GameObject currentCase = boardArray[position.x, position.y];
                 BoardCase boardCase = currentCase.GetComponent<BoardCase>();
@@ -304,7 +317,7 @@ public class BoardManager : MonoBehaviour, IGameManager
                         boardCase.isClickable = false;
                     }
                 }
-                else if(!selectedPiece)
+                else if(selectedPiece)
                 {
                     if (possibleMoves != null)
                     {

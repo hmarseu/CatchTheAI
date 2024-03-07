@@ -13,4 +13,5 @@ MonoBehaviour:
   m_Name: Koropokkuru
   m_EditorClassIdentifier: 
   Image: {fileID: 21300000, guid: fbcca1cb7c8f04b4c9d8497586468996, type: 3}
+  ePawnType: 4
   PossibleMoves: 010101010001010101
