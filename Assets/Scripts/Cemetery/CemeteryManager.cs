@@ -16,16 +16,16 @@ namespace catchTheAI
             GameObject cemetery = playerId == 1 ? deadZonePlayer1 : deadZonePlayer2;
 
             piece.transform.SetParent(parentDeadPieces.transform);
-            piece.transform.localPosition = Vector3.zero; // Réinitialiser la position locale
+            piece.transform.localPosition = Vector3.zero;
             piece.name = piece.name;
 
-            // Créer un bouton pour le visuel
+            // create a button for the visuals
             GameObject buttonPrefab = Instantiate(cemeteryButtonPrefab);
 
-            // Associer le bouton à la piece morte
+            // associate it to the dead piece
             buttonPrefab.GetComponent<CemeteryButton>().Setup(piece.GetComponent<Piece>().soPiece.Image, piece);
 
-            // Ajouter le bouton au cimetière
+            // add the button to the cemetery
             buttonPrefab.transform.SetParent(cemetery.transform, false);
         }
     }

@@ -20,6 +20,8 @@ public class BoardManager : MonoBehaviour, IGameManager
     [SerializeField] private float verticalSpacing;
     [SerializeField] private List<GameObject> pionDictionary;
 
+    private bool isParachuting;
+
     private GameObject selectedPiece;
     private Vector2Int selectedPiecePosition;
 
@@ -52,17 +54,10 @@ public class BoardManager : MonoBehaviour, IGameManager
                         boardArray[i,j].transform.GetChild(0).GetComponent<Piece>().player = player2;
                         boardArray[i, j].transform.GetChild(0).GetComponent<Piece>().idPlayer = 2;
                     }
-
                 }
-              
-
             }
-
         }
-        
-
     }
-    private bool isParachuting;
 
     private void Awake()
     {
@@ -98,26 +93,25 @@ public class BoardManager : MonoBehaviour, IGameManager
     }
     private void StartFillArray()
     {
-        
+        // player 1
         selectedPiece = pionDictionary[0];
-        PlacePiece(new Vector2Int(0, 0));
+        PlacePiece(new Vector2Int(0, 0), 1);
+        selectedPiece = pionDictionary[1];
+        PlacePiece(new Vector2Int(0, 1), 1);
+        selectedPiece = pionDictionary[2];
+        PlacePiece(new Vector2Int(0, 2), 1);
+        selectedPiece = pionDictionary[3];
+        PlacePiece(new Vector2Int(1, 1), 1);
+
+        // player 2
         selectedPiece = pionDictionary[0];
-        PlacePiece(new Vector2Int(3, 0));
-
+        PlacePiece(new Vector2Int(3, 0), 2);
         selectedPiece = pionDictionary[1];
-        PlacePiece(new Vector2Int(0, 1));
-        selectedPiece = pionDictionary[1];
-        PlacePiece(new Vector2Int(3, 1));
-
+        PlacePiece(new Vector2Int(3, 1), 2);
         selectedPiece = pionDictionary[2];
-        PlacePiece(new Vector2Int(0, 2));
-        selectedPiece = pionDictionary[2];
-        PlacePiece(new Vector2Int(3, 2));
-
+        PlacePiece(new Vector2Int(3, 2), 2);
         selectedPiece = pionDictionary[3];
-        PlacePiece(new Vector2Int(2, 1));
-        selectedPiece = pionDictionary[3];
-        PlacePiece(new Vector2Int(1, 1));
+        PlacePiece(new Vector2Int(2, 1), 2);
     }
 
     private void GenerateBoard()
@@ -182,7 +176,7 @@ public class BoardManager : MonoBehaviour, IGameManager
 
 
     // Create the selected GameObject piece at a specific position on the board.
-    public void PlacePiece(Vector2Int position)
+    public void PlacePiece(Vector2Int position, int player = 1)
     {
         int row = position.x;
         int col = position.y;
@@ -190,8 +184,10 @@ public class BoardManager : MonoBehaviour, IGameManager
         // check if there is already a piece
         HandleEatingPiece(position);
 
-        // place the selected piece on the new case
-        boardArray[row, col].GetComponent<BoardCase>().InstantiatePiece(selectedPiece);
+        // instantiate the selected piece on the new case
+        if (player != 1) boardArray[row, col].GetComponent<BoardCase>().InstantiatePiece(selectedPiece, 180f);
+        else boardArray[row, col].GetComponent<BoardCase>().InstantiatePiece(selectedPiece);
+
         selectedPiece = null;
 
         //StartCoroutine(DelayedUpdateTilesClickability());
@@ -202,7 +198,7 @@ public class BoardManager : MonoBehaviour, IGameManager
     public static event CemeteryRemove removeButtonCemetary;
 
     // to move a piece to a new position
-    public void MovePiece(Vector2Int position)
+    public void MovePiece(Vector2Int position, int player = 1)
     {
         int row = position.x;
         int col = position.y;
@@ -215,15 +211,13 @@ public class BoardManager : MonoBehaviour, IGameManager
         // check if there is already a piece
         HandleEatingPiece(position);
 
-        // place the selected piece on the new case
-        boardArray[row, col].GetComponent<BoardCase>().MovePiece(selectedPiece);
+        // move the selected piece on the new case
+        if (player != 1) boardArray[row, col].GetComponent<BoardCase>().MovePiece(selectedPiece, 180f);
+        else boardArray[row, col].GetComponent<BoardCase>().MovePiece(selectedPiece);
+
         selectedPiece = null;
         //ChangeTurn();
-
-       
     }
-
-  
 
     // Removes a the piece at a specific position on the board.
     public void RemovePiece(Vector2Int position)
@@ -260,13 +254,12 @@ public class BoardManager : MonoBehaviour, IGameManager
 
     public void OnCaseClicked(Vector2Int clickedPosition)
     {
-        
-      
         // got a piece on it
         
         if(selectedPiece)
         {
-            MovePiece(clickedPosition);
+            if(currentPlayerTurn == player2) MovePiece(clickedPosition, 2);
+            else MovePiece(clickedPosition, 1);
             ChangeTurn();
         }
         else
@@ -282,9 +275,9 @@ public class BoardManager : MonoBehaviour, IGameManager
                 SOPiece soPiece = selectedPiece.GetComponent<Piece>().soPiece;
                 transferPion(soPiece, clickedPosition, boardArray,currentPlayerTurn);
             }
-            
         }
     }
+
     private void ChangeTurn()
     {
         if (currentPlayerTurn== player1)
@@ -298,6 +291,7 @@ public class BoardManager : MonoBehaviour, IGameManager
         Debug.Log(currentPlayerTurn.GetName());
         UpdateTilesAtTurnChange();
     }
+
     private GameObject GetPieceAtPosition(Vector2Int position)
     {
         int row = position.x;
@@ -401,8 +395,8 @@ public class BoardManager : MonoBehaviour, IGameManager
         GameObject pieceToEat = GetPieceAtPosition(newPosition);
         if (pieceToEat != null)
         {
-            // Ajouter la pi�ce dans le cimeti�re
-            int playerId = pieceToEat.GetComponent<Piece>().idPlayer;
+            // add the piece in the cemetery
+            int playerId = selectedPiece.GetComponent<Piece>().idPlayer; // id of the player who is gonna eat
             cemeteryManager.AddToCemetery(pieceToEat, playerId);
         }
     }
