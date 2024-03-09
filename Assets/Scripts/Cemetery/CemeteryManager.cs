@@ -28,5 +28,23 @@ namespace catchTheAI
             // add the button to the cemetery
             buttonPrefab.transform.SetParent(cemetery.transform, false);
         }
+
+        public void SetCemeteryButtonsInteractability(bool player1IsPlaying)
+        {
+            CemeteryButton[] cemeteryButtonsPlayer1 = deadZonePlayer1.GetComponentsInChildren<CemeteryButton>();
+            CemeteryButton[] cemeteryButtonsPlayer2 = deadZonePlayer2.GetComponentsInChildren<CemeteryButton>();
+
+            foreach (CemeteryButton button in cemeteryButtonsPlayer1)
+            {
+                button.SetInteractability(player1IsPlaying);
+                Debug.Log("cemetery 1 : " + player1IsPlaying);
+            }
+            foreach (CemeteryButton button in cemeteryButtonsPlayer2)
+            {
+                button.SetInteractability(!player1IsPlaying);
+                Debug.Log("cemetery 2 : " + !player1IsPlaying);
+            }
+        }
+
     }
 }

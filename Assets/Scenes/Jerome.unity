@@ -478,6 +478,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 07289e1a211ac5b41a81ec624562bcac, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  player1: {fileID: 0}
+  player2: {fileID: 0}
 --- !u!4 &909495978
 Transform:
   m_ObjectHideFlags: 0
@@ -618,6 +620,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 965706571100239510, guid: 32dc007117f1dea4f86f68a7b2192269, type: 3}
+      propertyPath: player1
+      value: 
+      objectReference: {fileID: 559254056}
+    - target: {fileID: 965706571100239510, guid: 32dc007117f1dea4f86f68a7b2192269, type: 3}
+      propertyPath: player2
+      value: 
+      objectReference: {fileID: 271821163}
     - target: {fileID: 965706571100239510, guid: 32dc007117f1dea4f86f68a7b2192269, type: 3}
       propertyPath: cemeteryManager
       value: 

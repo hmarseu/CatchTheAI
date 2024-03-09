@@ -35,23 +35,22 @@ public class BoardManager : MonoBehaviour, IGameManager
 
     private void SetPlayerPiece()
     {
-    
         for (int i = 0; i < numberOfRows; i++)
         {
             for (int j = 0; j < numberOfColumns; j++)
             {
-                if (boardArray[i,j].transform.childCount>0)
+                if (boardArray[i, j].transform.childCount > 0)
                 {
-                    if (i<2)
+                    if (i < 2)
                     {
-                        
-                        boardArray[i,j].transform.GetChild(0).GetComponent<Piece>().player = player1;
+
+                        boardArray[i, j].transform.GetChild(0).GetComponent<Piece>().player = player1;
                         boardArray[i, j].transform.GetChild(0).GetComponent<Piece>().idPlayer = 1;
                     }
                     else
                     {
-                       
-                        boardArray[i,j].transform.GetChild(0).GetComponent<Piece>().player = player2;
+
+                        boardArray[i, j].transform.GetChild(0).GetComponent<Piece>().player = player2;
                         boardArray[i, j].transform.GetChild(0).GetComponent<Piece>().idPlayer = 2;
                     }
                 }
@@ -62,7 +61,7 @@ public class BoardManager : MonoBehaviour, IGameManager
     private void Awake()
     {
         boardCase = casePrefab.GetComponent<BoardCase>();
-   
+
     }
 
     private void Start()
@@ -78,8 +77,6 @@ public class BoardManager : MonoBehaviour, IGameManager
         ECampType pl1 = ECampType.PLAYER_ONE;
         ECampType pl2 = ECampType.PLAYER_TWO;
 
-        player1 = GameObject.Find("Player1").GetComponent<Player>();
-        player2 = GameObject.Find("Player2").GetComponent<Player>();
         player1.SetCamp(pl1);
         player1.SetName("joueur 1");
         player2.SetCamp(pl2);
@@ -181,14 +178,12 @@ public class BoardManager : MonoBehaviour, IGameManager
         int row = position.x;
         int col = position.y;
 
-        // check if there is already a piece
-        HandleEatingPiece(position);
-
         // instantiate the selected piece on the new case
         if (player != 1) boardArray[row, col].GetComponent<BoardCase>().InstantiatePiece(selectedPiece, 180f);
         else boardArray[row, col].GetComponent<BoardCase>().InstantiatePiece(selectedPiece);
 
         selectedPiece = null;
+        selectedPiecePosition = Vector2Int.zero;
 
         //StartCoroutine(DelayedUpdateTilesClickability());
         UpdateTilesClickability();
@@ -216,6 +211,7 @@ public class BoardManager : MonoBehaviour, IGameManager
         else boardArray[row, col].GetComponent<BoardCase>().MovePiece(selectedPiece);
 
         selectedPiece = null;
+        selectedPiecePosition = Vector2Int.zero;
         //ChangeTurn();
     }
 
@@ -249,22 +245,30 @@ public class BoardManager : MonoBehaviour, IGameManager
         UpdateTilesClickability(null, true);
     }
 
-    public delegate void transferPionToMovementManager(SOPiece pion, Vector2Int position, GameObject[,] boardArray,Player player);
+    public delegate void transferPionToMovementManager(SOPiece pion, Vector2Int position, GameObject[,] boardArray, Player player);
     public static event transferPionToMovementManager transferPion;
 
     public void OnCaseClicked(Vector2Int clickedPosition)
     {
         // got a piece on it
-        
-        if(selectedPiece)
+        if (selectedPiece)
         {
-            if(currentPlayerTurn == player2) MovePiece(clickedPosition, 2);
+            if (selectedPiecePosition == clickedPosition)
+            {
+                selectedPiece = null;
+                selectedPiecePosition = Vector2Int.zero;
+                UpdateTilesAtTurnChange();
+                return;
+            }
+
+            if (currentPlayerTurn == player2) MovePiece(clickedPosition, 2);
             else MovePiece(clickedPosition, 1);
             ChangeTurn();
         }
         else
         {
             GameObject piece = GetPieceAtPosition(clickedPosition);
+            selectedPiecePosition = clickedPosition;
             // got a piece on it
             if (piece)
             {
@@ -273,22 +277,26 @@ public class BoardManager : MonoBehaviour, IGameManager
                 selectedPiecePosition = clickedPosition;
 
                 SOPiece soPiece = selectedPiece.GetComponent<Piece>().soPiece;
-                transferPion(soPiece, clickedPosition, boardArray,currentPlayerTurn);
+                transferPion(soPiece, clickedPosition, boardArray, currentPlayerTurn);
             }
         }
     }
 
     private void ChangeTurn()
     {
-        if (currentPlayerTurn== player1)
+        bool player1IsPlaying;
+        if (currentPlayerTurn == player1)
         {
             currentPlayerTurn = player2;
+            player1IsPlaying = false;
         }
         else
         {
             currentPlayerTurn = player1;
+            player1IsPlaying = true;
         }
         Debug.Log(currentPlayerTurn.GetName());
+        cemeteryManager.SetCemeteryButtonsInteractability(player1IsPlaying);
         UpdateTilesAtTurnChange();
     }
 
@@ -301,7 +309,7 @@ public class BoardManager : MonoBehaviour, IGameManager
         {
             if (boardArray[row, col] != null && boardArray[row, col].transform.childCount > 0)
             {
-               
+
                 return boardArray[row, col].transform.GetChild(0).gameObject;
 
             }
@@ -316,31 +324,27 @@ public class BoardManager : MonoBehaviour, IGameManager
         {
             for (int j = 0; j < numberOfColumns; j++)
             {
-
                 Vector2Int position = new Vector2Int(i, j);
                 GameObject currentCase = boardArray[position.x, position.y];
-
-                BoardCase boardCase = currentCase.GetComponent<BoardCase>();
                 GameObject pieceAtPosition = GetPieceAtPosition(position);
-                if (pieceAtPosition!=null)
+
+                if (pieceAtPosition != null)
                 {
                     if (pieceAtPosition.GetComponent<Piece>().player == currentPlayerTurn)
                     {
                         currentCase.GetComponent<BoardCase>().isClickable = true;
-
                     }
                     else
                     {
                         currentCase.GetComponent<BoardCase>().isClickable = false;
                     }
-
                 }
+                else currentCase.GetComponent<BoardCase>().isClickable = false;
             }
         }
     }
     public void UpdateTilesClickability(List<Vector2Int> possibleMoves = null, bool parachuting = false)
     {
-        
         isParachuting = parachuting;
 
         // Go through the board
@@ -349,7 +353,6 @@ public class BoardManager : MonoBehaviour, IGameManager
             for (int j = 0; j < numberOfColumns; j++)
             {
                 // Get the piece info
-                
                 Vector2Int position = new Vector2Int(i, j);
                 GameObject currentCase = boardArray[position.x, position.y];
 
@@ -364,6 +367,11 @@ public class BoardManager : MonoBehaviour, IGameManager
                 }
                 // If there are possible moves and the case is in the list of possible moves
                 else if (possibleMoves != null && possibleMoves.Contains(position))
+                {
+                    currentCase.GetComponent<BoardCase>().isClickable = true;
+                }
+                // If its the same case
+                else if (selectedPiece != null && pieceAtPosition == selectedPiece)
                 {
                     currentCase.GetComponent<BoardCase>().isClickable = true;
                 }
@@ -392,14 +400,25 @@ public class BoardManager : MonoBehaviour, IGameManager
     }
     private void HandleEatingPiece(Vector2Int newPosition)
     {
+        Debug.Log("handle eating");
         GameObject pieceToEat = GetPieceAtPosition(newPosition);
         if (pieceToEat != null)
         {
+            Debug.Log("piece to eat no null");
             // add the piece in the cemetery
             int playerId = selectedPiece.GetComponent<Piece>().idPlayer; // id of the player who is gonna eat
             cemeteryManager.AddToCemetery(pieceToEat, playerId);
+            ChangePieceTeam(pieceToEat);
         }
     }
-
-
+    public void ChangePieceTeam(GameObject piece)
+    {
+        Piece pieceComponent = piece.GetComponent<Piece>();
+        if (pieceComponent != null)
+        {
+            // change the team of the piece
+            pieceComponent.player = currentPlayerTurn;
+            pieceComponent.idPlayer = (short)(currentPlayerTurn == player1 ? 1 : 2);
+        }
+    }
 }

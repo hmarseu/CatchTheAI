@@ -15,7 +15,7 @@ namespace catchTheAI
 
         public void ClickOnCemeteryPiece()
         {
-           selectPiece(associatedPiece);
+            selectPiece(associatedPiece);
         }
 
         private void OnEnable()
@@ -42,6 +42,11 @@ namespace catchTheAI
             {
                 Destroy(this.gameObject);
             }
+        }
+
+        public void SetInteractability(bool isInteractable)
+        {
+            GetComponent<Button>().interactable = isInteractable;
         }
     }
 }

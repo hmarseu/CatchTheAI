@@ -13,4 +13,5 @@ MonoBehaviour:
   m_Name: Kodama
   m_EditorClassIdentifier: 
   Image: {fileID: 21300000, guid: 3a4d40e5e8ba67e469af928c799d406f, type: 3}
-  PossibleMoves: 000000000000000100
+  ePawnType: 0
+  PossibleMoves: 000000000001000000

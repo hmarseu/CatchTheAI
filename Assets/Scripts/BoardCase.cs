@@ -7,8 +7,23 @@ using UnityEngine.UIElements;
 
 public class BoardCase : MonoBehaviour
 {
-    public bool isClickable = false;
+    [SerializeField] private bool _isClickable = false;
+    [SerializeField] private GameObject vfxMove;
+
+    public bool isClickable
+    {
+        get { return _isClickable; }
+        set
+        {
+            _isClickable = value;
+            HighlightCase();
+        }
+    }
+
     private Vector2Int positionInBoard;
+
+    private static readonly Color HIGHLIGHTCOLOR = new Color(0.5f, 0.8f, 0.1f, 0.5f);
+    private static readonly Color NORMALCOLOR = new Color(0.5f, 0.8f, 0.1f, 0f);
 
     public delegate void onClick(Vector2Int positionInBoard);
     public static event onClick caseClicked;
@@ -45,6 +60,7 @@ public class BoardCase : MonoBehaviour
     {
         // Changer le parent de la pièce pour la placer dans la case
         piece.transform.SetParent(transform);
+        // PlayVFX(vfxMove);
         piece.transform.rotation = Quaternion.Euler(0f, 0f, rotationZ);
         piece.transform.localPosition = Vector3.zero; // Réinitialiser la position locale
         piece.name = piece.name; // Optionnel : Mettre à jour le nom de l'objet
@@ -59,7 +75,13 @@ public class BoardCase : MonoBehaviour
         newPiece.name = piece.name;
     }
 
-    public void RemovePiece ()
+    public void HighlightCase()
+    {
+        if (isClickable) this.gameObject.GetComponent<SpriteRenderer>().color = HIGHLIGHTCOLOR;
+        else this.gameObject.GetComponent<SpriteRenderer>().color = NORMALCOLOR;
+    }
+
+    public void RemovePiece()
     {
         foreach (Transform child in transform)
         {
@@ -80,4 +102,21 @@ public class BoardCase : MonoBehaviour
         positionInBoard = position;
     }
 
+    public void PlayVFX(GameObject vfx)
+    {
+        vfx.SetActive(true);
+        StartCoroutine(DeactivateVFX());
+    }
+
+    private IEnumerator DeactivateVFX()
+    {
+        // wait for the vfx to finish
+        ParticleSystem ps = vfxMove.GetComponent<ParticleSystem>();
+        if (ps != null)
+        {
+            yield return new WaitForSeconds(ps.main.duration);
+        }
+
+        vfxMove.SetActive(false);
+    }
 }

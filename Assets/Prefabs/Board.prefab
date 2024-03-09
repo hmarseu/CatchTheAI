@@ -46,10 +46,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   casePrefab: {fileID: 3165236478864733527, guid: ed2b31c1f01b0a149bf8b5707c17176a, type: 3}
+  cemeteryManager: {fileID: 0}
   numberOfRows: 4
   numberOfColumns: 3
   horizontalSpacing: 0.05
   verticalSpacing: 0.05
+  pionDictionary:
+  - {fileID: 1427206663764879899, guid: 9594a3fc23fe24e48986b7efcd463b13, type: 3}
+  - {fileID: 7104634292339179664, guid: 0dbbd56cec53aaf48b1566fc8479a474, type: 3}
+  - {fileID: 7276865630796651499, guid: 2698046ea1d0b174d84bc0e3944cd8e6, type: 3}
+  - {fileID: 8219372080948096035, guid: bf6b2a719014c6741abd3af2c7142693, type: 3}
+  player1: {fileID: 0}
+  player2: {fileID: 0}
+  currentPlayerTurn: {fileID: 0}
 --- !u!1 &7151304737442357741
 GameObject:
   m_ObjectHideFlags: 0
