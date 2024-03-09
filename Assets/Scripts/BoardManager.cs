@@ -295,7 +295,7 @@ public class BoardManager : MonoBehaviour, IGameManager
             currentPlayerTurn = player1;
             player1IsPlaying = true;
         }
-        Debug.Log(currentPlayerTurn.GetName());
+        // Debug.Log(currentPlayerTurn.GetName());
         cemeteryManager.SetCemeteryButtonsInteractability(player1IsPlaying);
         UpdateTilesAtTurnChange();
     }
@@ -309,9 +309,7 @@ public class BoardManager : MonoBehaviour, IGameManager
         {
             if (boardArray[row, col] != null && boardArray[row, col].transform.childCount > 0)
             {
-
                 return boardArray[row, col].transform.GetChild(0).gameObject;
-
             }
         }
 
@@ -400,11 +398,9 @@ public class BoardManager : MonoBehaviour, IGameManager
     }
     private void HandleEatingPiece(Vector2Int newPosition)
     {
-        Debug.Log("handle eating");
         GameObject pieceToEat = GetPieceAtPosition(newPosition);
         if (pieceToEat != null)
         {
-            Debug.Log("piece to eat no null");
             // add the piece in the cemetery
             int playerId = selectedPiece.GetComponent<Piece>().idPlayer; // id of the player who is gonna eat
             cemeteryManager.AddToCemetery(pieceToEat, playerId);

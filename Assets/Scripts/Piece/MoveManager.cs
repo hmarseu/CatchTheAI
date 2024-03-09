@@ -38,8 +38,8 @@ public class MoveManager : MonoBehaviour
 
         deltaX = new int[] { -1, 0, 1, -1, 0, 1, -1, 0, 1 };
         deltaY = new int[] { -1, -1, -1, 0, 0, 0, 1, 1, 1 };
-
         // take into account the player ROTATION
+
         if (player != player1)
         {
             for (int i = 0; i < deltaX.Length; i++)
@@ -83,8 +83,10 @@ public class MoveManager : MonoBehaviour
         {
             Transform childTransform = tempBoardArray[pos.x, pos.y].transform.GetChild(0);
             Piece pion = childTransform.gameObject.GetComponent<Piece>();
-            return pion.player != player;
+
+            return !pion.player.Equals(player);
         }
         return true;
     }
+
 }

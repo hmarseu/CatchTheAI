@@ -1,3 +1,4 @@
+using CartoonFX;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -8,7 +9,7 @@ using UnityEngine.UIElements;
 public class BoardCase : MonoBehaviour
 {
     [SerializeField] private bool _isClickable = false;
-    [SerializeField] private GameObject vfxMove;
+    [SerializeField] private VFX_Manager _vfxManager;
 
     public bool isClickable
     {
@@ -27,6 +28,11 @@ public class BoardCase : MonoBehaviour
 
     public delegate void onClick(Vector2Int positionInBoard);
     public static event onClick caseClicked;
+
+    public void Awake()
+    {
+        _vfxManager = GameObject.Find("VFX_List").GetComponent<VFX_Manager>();
+    }
 
     public void OnMouseDown()
     {
@@ -60,7 +66,7 @@ public class BoardCase : MonoBehaviour
     {
         // Changer le parent de la pièce pour la placer dans la case
         piece.transform.SetParent(transform);
-        // PlayVFX(vfxMove);
+        PlayVFX();
         piece.transform.rotation = Quaternion.Euler(0f, 0f, rotationZ);
         piece.transform.localPosition = Vector3.zero; // Réinitialiser la position locale
         piece.name = piece.name; // Optionnel : Mettre à jour le nom de l'objet
@@ -102,21 +108,8 @@ public class BoardCase : MonoBehaviour
         positionInBoard = position;
     }
 
-    public void PlayVFX(GameObject vfx)
+    public void PlayVFX()
     {
-        vfx.SetActive(true);
-        StartCoroutine(DeactivateVFX());
-    }
-
-    private IEnumerator DeactivateVFX()
-    {
-        // wait for the vfx to finish
-        ParticleSystem ps = vfxMove.GetComponent<ParticleSystem>();
-        if (ps != null)
-        {
-            yield return new WaitForSeconds(ps.main.duration);
-        }
-
-        vfxMove.SetActive(false);
+        _vfxManager.PlayAtIndex(4, this.transform.position);
     }
 }

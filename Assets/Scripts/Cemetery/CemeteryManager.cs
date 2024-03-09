@@ -37,12 +37,10 @@ namespace catchTheAI
             foreach (CemeteryButton button in cemeteryButtonsPlayer1)
             {
                 button.SetInteractability(player1IsPlaying);
-                Debug.Log("cemetery 1 : " + player1IsPlaying);
             }
             foreach (CemeteryButton button in cemeteryButtonsPlayer2)
             {
                 button.SetInteractability(!player1IsPlaying);
-                Debug.Log("cemetery 2 : " + !player1IsPlaying);
             }
         }
 
