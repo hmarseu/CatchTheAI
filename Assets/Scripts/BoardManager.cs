@@ -3,6 +3,7 @@ using catchTheAI;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using Unity.VisualScripting;
 using UnityEditor.TextCore.Text;
 using UnityEngine;
@@ -30,7 +31,7 @@ public class BoardManager : MonoBehaviour, IGameManager
     private bool isGameEnd = false;
     private GameObject selectedPiece;
 
-private Vector2Int selectedPiecePosition;
+    private Vector2Int selectedPiecePosition;
 
     private BoardCase boardCase;
     private GameObject[,] boardArray; // Array that represent the board
@@ -39,6 +40,11 @@ private Vector2Int selectedPiecePosition;
     public Player player2;
 
     public Player currentPlayerTurn;
+
+    [SerializeField] SOPiece kodamaSamurai;
+    [SerializeField] SOPiece kodama;
+
+    [SerializeField] TextMeshProUGUI winnerText;
 
     private void SetPlayerPiece()
     {
@@ -201,15 +207,43 @@ private Vector2Int selectedPiecePosition;
     public delegate void CemeteryRemove(GameObject selectedPiece);
     public static event CemeteryRemove removeButtonCemetary;
 
+
+    public void TransformationKodama(GameObject pieceToTransform,bool eaten)
+    {
+        Piece piece = pieceToTransform.GetComponent<Piece>();
+        if (!eaten && piece.soPiece.ePawnType == EPawnType.Kodama)
+        {
+            piece.soPiece = kodamaSamurai;
+            piece.remakeSprite();
+
+        }
+         else if(eaten && piece.soPiece.ePawnType == EPawnType.KodamaSamurai)
+         {
+             piece.soPiece = kodama;
+             piece.remakeSprite();
+         }
+    }
     // to move a piece to a new position
     public void MovePiece(Vector2Int position, int player = 1)
     {
         int row = position.x;
         int col = position.y;
+        
 
+        // si nouvelle position = bandeau final et selected piece = kodama et noparachuted alors transformation 
+        
+        // beaucoup de "if" mais c'est pour limité le getComponent sur les pieces a bouger
         if (isParachuting)
         {
             removeButtonCemetary(selectedPiece);
+        }
+        else
+        {
+            if (row == 0 || row == 3)
+            {
+              // la fonction fait elle meme la verification du type de piece
+              TransformationKodama(selectedPiece,false);
+            }
         }
 
         // check if there is already a piece
@@ -419,9 +453,36 @@ private Vector2Int selectedPiecePosition;
         {
             // add the piece in the cemetery
             int playerId = selectedPiece.GetComponent<Piece>().idPlayer; // id of the player who is gonna eat
+            if (pieceToEat.GetComponent<Piece>().soPiece.ePawnType == EPawnType.Koropokkuru)
+            {
+                End(playerId);
+                return;
+            }
+            TransformationKodama(pieceToEat,true);
             cemeteryManager.AddToCemetery(pieceToEat, playerId);
             ChangePieceTeam(pieceToEat);
         }
+    }
+    private void End(int player)
+    {
+        isGameEnd = true;
+        // ON GAME END
+        // to play visual firewoks
+        if (player == 1)
+        {
+            winnerText.text = player1.name;
+        }
+        else 
+        {
+            winnerText.text = player2.name;
+        }
+
+        // to play visual firewoks
+        _vfxManager.PlayAtIndex(6, new Vector3(0, -3.50f, 0));
+        // to play end sound
+        _sfxManager.PlaySoundEffect(4);
+       
+        StartCoroutine(ShowEndMenu(1));
     }
     public void ChangePieceTeam(GameObject piece)
     {
@@ -438,17 +499,7 @@ private Vector2Int selectedPiecePosition;
         _sfxManager?.PlaySoundEffect(2);
     }
 
-    public void EndGame()
-    {
-        isGameEnd = true;
-
-        // to play visual firewoks
-        _vfxManager.PlayAtIndex(6, new Vector3(0, -3.50f, 0));
-        // to play end sound
-        _sfxManager.PlaySoundEffect(4);
-
-        StartCoroutine(ShowEndMenu(3f));
-    }
+    
 
     IEnumerator ShowEndMenu(float delay)
     {

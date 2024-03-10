@@ -31,7 +31,10 @@ public class Piece : MonoBehaviour,IPawn
             Debug.LogWarning("soPiece or its Image is not assigned in the inspector.");
         }
     }
-
+    public void remakeSprite()
+    {
+        Start();
+    }
     // has been eaten
     protected virtual void Defeated()
     {
