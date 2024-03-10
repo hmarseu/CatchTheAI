@@ -1,3 +1,4 @@
+using CartoonFX;
 using catchTheAI;
 using System;
 using System.Collections;
@@ -5,6 +6,7 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEditor.TextCore.Text;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
 using YokaiNoMori.Enumeration;
 using YokaiNoMori.Interface;
@@ -19,10 +21,13 @@ public class BoardManager : MonoBehaviour, IGameManager
     [SerializeField] private float horizontalSpacing;
     [SerializeField] private float verticalSpacing;
     [SerializeField] private List<GameObject> pionDictionary;
+
+    [SerializeField] private VFX_Manager _vfxManager;
     private SFXManager _sfxManager;
+    [SerializeField] private GameObject EndMenu;
 
     private bool isParachuting;
-
+    private bool isGameEnd = false;
     private GameObject selectedPiece;
 
 private Vector2Int selectedPiecePosition;
@@ -245,9 +250,12 @@ private Vector2Int selectedPiecePosition;
 
     public void PrepareParachuting(GameObject piece)
     {
-        selectedPiece = piece;
-        PlaySFXSelected();
-        UpdateTilesClickability(null, true);
+        if (!isGameEnd)
+        {
+            selectedPiece = piece;
+            PlaySFXSelected();
+            UpdateTilesClickability(null, true);
+        }
     }
 
     public delegate void transferPionToMovementManager(SOPiece pion, Vector2Int position, GameObject[,] boardArray, Player player);
@@ -255,35 +263,38 @@ private Vector2Int selectedPiecePosition;
 
     public void OnCaseClicked(Vector2Int clickedPosition)
     {
-        // got a piece on it
-        if (selectedPiece)
+        if(!isGameEnd)
         {
-            if (selectedPiecePosition == clickedPosition && !isParachuting)
-            {
-                selectedPiece = null;
-                selectedPiecePosition = Vector2Int.zero;
-                UpdateTilesAtTurnChange();
-                return;
-            }
-
-            if (currentPlayerTurn == player2) MovePiece(clickedPosition, 2);
-            else MovePiece(clickedPosition, 1);
-            ChangeTurn();
-        }
-        else
-        {
-            GameObject piece = GetPieceAtPosition(clickedPosition);
-            selectedPiecePosition = clickedPosition;
             // got a piece on it
-            if (piece)
+            if (selectedPiece)
             {
-                PlaySFXSelected();
-                //Debug.Log("piece : " + piece + "position : " + clickedPosition);
-                selectedPiece = piece;
-                selectedPiecePosition = clickedPosition;
+                if (selectedPiecePosition == clickedPosition && !isParachuting)
+                {
+                    selectedPiece = null;
+                    selectedPiecePosition = Vector2Int.zero;
+                    UpdateTilesAtTurnChange();
+                    return;
+                }
 
-                SOPiece soPiece = selectedPiece.GetComponent<Piece>().soPiece;
-                transferPion(soPiece, clickedPosition, boardArray, currentPlayerTurn);
+                if (currentPlayerTurn == player2) MovePiece(clickedPosition, 2);
+                else MovePiece(clickedPosition, 1);
+                ChangeTurn();
+            }
+            else
+            {
+                GameObject piece = GetPieceAtPosition(clickedPosition);
+                selectedPiecePosition = clickedPosition;
+                // got a piece on it
+                if (piece)
+                {
+                    PlaySFXSelected();
+                    //Debug.Log("piece : " + piece + "position : " + clickedPosition);
+                    selectedPiece = piece;
+                    selectedPiecePosition = clickedPosition;
+
+                    SOPiece soPiece = selectedPiece.GetComponent<Piece>().soPiece;
+                    transferPion(soPiece, clickedPosition, boardArray, currentPlayerTurn);
+                }
             }
         }
     }
@@ -425,5 +436,23 @@ private Vector2Int selectedPiecePosition;
     public void PlaySFXSelected()
     {
         _sfxManager?.PlaySoundEffect(2);
+    }
+
+    public void EndGame()
+    {
+        isGameEnd = true;
+
+        // to play visual firewoks
+        _vfxManager.PlayAtIndex(6, new Vector3(0, -3.50f, 0));
+        // to play end sound
+        _sfxManager.PlaySoundEffect(4);
+
+        StartCoroutine(ShowEndMenu(3f));
+    }
+
+    IEnumerator ShowEndMenu(float delay)
+    {
+        yield return new WaitForSecondsRealtime(delay); // Utiliser WaitForSecondsRealtime pour ignorer Time.timeScale
+        EndMenu.SetActive(true);
     }
 }
