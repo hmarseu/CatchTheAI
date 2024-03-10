@@ -123,11 +123,53 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &106111012 stripped
+--- !u!1 &168276298
 GameObject:
-  m_CorrespondingSourceObject: {fileID: 8586461611761763566, guid: c68d877431a67314a87abf020dddba6d, type: 3}
-  m_PrefabInstance: {fileID: 1814086202987900705}
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 168276300}
+  - component: {fileID: 168276299}
+  m_Layer: 0
+  m_Name: SFXManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &168276299
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 168276298}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f458d13dee78cb4fb618d9ce580edb3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  backgroundMusicClip: {fileID: 8300000, guid: 813f7ef0db3ea0941a9337b4d63c302c, type: 3}
+  soundEffectClips: []
+  soundEffectSource: {fileID: 0}
+--- !u!4 &168276300
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 168276298}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 2.4169877, y: 0.447107, z: 0.025444848}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &239918788
 GameObject:
   m_ObjectHideFlags: 0
@@ -577,11 +619,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &2137358478 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 3921516178502350299, guid: c68d877431a67314a87abf020dddba6d, type: 3}
-  m_PrefabInstance: {fileID: 1814086202987900705}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1814086202987900705
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -704,13 +741,9 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 271821163}
     - target: {fileID: 965706571100239510, guid: 32dc007117f1dea4f86f68a7b2192269, type: 3}
-      propertyPath: TempEndMenu
+      propertyPath: winnerText
       value: 
-      objectReference: {fileID: 7575018782756425661}
-    - target: {fileID: 965706571100239510, guid: 32dc007117f1dea4f86f68a7b2192269, type: 3}
-      propertyPath: _sfxManager
-      value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 7575018782756425662}
     - target: {fileID: 965706571100239510, guid: 32dc007117f1dea4f86f68a7b2192269, type: 3}
       propertyPath: _vfxManager
       value: 
@@ -719,38 +752,6 @@ PrefabInstance:
       propertyPath: cemeteryManager
       value: 
       objectReference: {fileID: 547289692}
-    - target: {fileID: 965706571100239510, guid: 32dc007117f1dea4f86f68a7b2192269, type: 3}
-      propertyPath: cemeteryPlayer1
-      value: 
-      objectReference: {fileID: 106111012}
-    - target: {fileID: 965706571100239510, guid: 32dc007117f1dea4f86f68a7b2192269, type: 3}
-      propertyPath: cemeteryPlayer2
-      value: 
-      objectReference: {fileID: 2137358478}
-    - target: {fileID: 965706571100239510, guid: 32dc007117f1dea4f86f68a7b2192269, type: 3}
-      propertyPath: cemeteryButtonPrefab
-      value: 
-      objectReference: {fileID: 1433916479952765451, guid: f15800b4d260541468bce6455135c744, type: 3}
-    - target: {fileID: 965706571100239510, guid: 32dc007117f1dea4f86f68a7b2192269, type: 3}
-      propertyPath: pionDictionary.Array.size
-      value: 4
-      objectReference: {fileID: 0}
-    - target: {fileID: 965706571100239510, guid: 32dc007117f1dea4f86f68a7b2192269, type: 3}
-      propertyPath: pionDictionary.Array.data[0]
-      value: 
-      objectReference: {fileID: 1427206663764879899, guid: 9594a3fc23fe24e48986b7efcd463b13, type: 3}
-    - target: {fileID: 965706571100239510, guid: 32dc007117f1dea4f86f68a7b2192269, type: 3}
-      propertyPath: pionDictionary.Array.data[1]
-      value: 
-      objectReference: {fileID: 7104634292339179664, guid: 0dbbd56cec53aaf48b1566fc8479a474, type: 3}
-    - target: {fileID: 965706571100239510, guid: 32dc007117f1dea4f86f68a7b2192269, type: 3}
-      propertyPath: pionDictionary.Array.data[2]
-      value: 
-      objectReference: {fileID: 7276865630796651499, guid: 2698046ea1d0b174d84bc0e3944cd8e6, type: 3}
-    - target: {fileID: 965706571100239510, guid: 32dc007117f1dea4f86f68a7b2192269, type: 3}
-      propertyPath: pionDictionary.Array.data[3]
-      value: 
-      objectReference: {fileID: 8219372080948096035, guid: bf6b2a719014c6741abd3af2c7142693, type: 3}
     - target: {fileID: 4131426956335003178, guid: 32dc007117f1dea4f86f68a7b2192269, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -794,10 +795,6 @@ PrefabInstance:
     - target: {fileID: 6527013014381103778, guid: 32dc007117f1dea4f86f68a7b2192269, type: 3}
       propertyPath: m_Name
       value: Board
-      objectReference: {fileID: 0}
-    - target: {fileID: 6527013014381103778, guid: 32dc007117f1dea4f86f68a7b2192269, type: 3}
-      propertyPath: m_IsActive
-      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -982,6 +979,17 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 4663008365635892971, guid: 0bb44e2af48738b41ae7ae83cdb1bbfe, type: 3}
   m_PrefabInstance: {fileID: 7575018782756425660}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &7575018782756425662 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5792764336481282519, guid: 0bb44e2af48738b41ae7ae83cdb1bbfe, type: 3}
+  m_PrefabInstance: {fileID: 7575018782756425660}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &7845246503778635991
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1113,3 +1121,4 @@ SceneRoots:
   - {fileID: 1280435618}
   - {fileID: 909495978}
   - {fileID: 4059050127995860221}
+  - {fileID: 168276300}

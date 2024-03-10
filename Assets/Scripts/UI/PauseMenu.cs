@@ -9,7 +9,7 @@ public class PauseMenu : MonoBehaviour
 
     private void Awake()
     {
-        _sfxManager = GameObject.Find("SFXManager").GetComponent<SFXManager>();
+        _sfxManager = GameObject.Find("VFX_List").GetComponent<SFXManager>();
     }
 
     public void TogglePause()

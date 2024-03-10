@@ -56,9 +56,14 @@ MonoBehaviour:
   - {fileID: 7104634292339179664, guid: 0dbbd56cec53aaf48b1566fc8479a474, type: 3}
   - {fileID: 7276865630796651499, guid: 2698046ea1d0b174d84bc0e3944cd8e6, type: 3}
   - {fileID: 8219372080948096035, guid: bf6b2a719014c6741abd3af2c7142693, type: 3}
+  _vfxManager: {fileID: 0}
+  EndMenu: {fileID: 0}
   player1: {fileID: 0}
   player2: {fileID: 0}
   currentPlayerTurn: {fileID: 0}
+  kodamaSamurai: {fileID: 11400000, guid: dd91bf24a234d08459c1eaf9688f79f0, type: 2}
+  kodama: {fileID: 11400000, guid: c675526a54fd65f469980a7855aa9370, type: 2}
+  winnerText: {fileID: 0}
 --- !u!1 &7151304737442357741
 GameObject:
   m_ObjectHideFlags: 0
