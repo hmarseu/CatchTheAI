@@ -253,7 +253,7 @@ public class BoardManager : MonoBehaviour, IGameManager
         // got a piece on it
         if (selectedPiece)
         {
-            if (selectedPiecePosition == clickedPosition)
+            if (selectedPiecePosition == clickedPosition && !isParachuting)
             {
                 selectedPiece = null;
                 selectedPiecePosition = Vector2Int.zero;
@@ -354,7 +354,6 @@ public class BoardManager : MonoBehaviour, IGameManager
                 Vector2Int position = new Vector2Int(i, j);
                 GameObject currentCase = boardArray[position.x, position.y];
 
-                BoardCase boardCase = currentCase.GetComponent<BoardCase>();
                 GameObject pieceAtPosition = GetPieceAtPosition(position);
                 bool isEmpty = pieceAtPosition == null;
 
