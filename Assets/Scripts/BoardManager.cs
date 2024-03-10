@@ -19,11 +19,13 @@ public class BoardManager : MonoBehaviour, IGameManager
     [SerializeField] private float horizontalSpacing;
     [SerializeField] private float verticalSpacing;
     [SerializeField] private List<GameObject> pionDictionary;
+    private SFXManager _sfxManager;
 
     private bool isParachuting;
 
     private GameObject selectedPiece;
-    private Vector2Int selectedPiecePosition;
+
+private Vector2Int selectedPiecePosition;
 
     private BoardCase boardCase;
     private GameObject[,] boardArray; // Array that represent the board
@@ -61,7 +63,7 @@ public class BoardManager : MonoBehaviour, IGameManager
     private void Awake()
     {
         boardCase = casePrefab.GetComponent<BoardCase>();
-
+        _sfxManager = GameObject.Find("SFXManager").GetComponent<SFXManager>();
     }
 
     private void Start()
@@ -113,6 +115,8 @@ public class BoardManager : MonoBehaviour, IGameManager
 
     private void GenerateBoard()
     {
+        _sfxManager?.PlaySoundEffect(0);
+
         boardArray = new GameObject[numberOfRows, numberOfColumns];
 
         float startX = -(numberOfColumns - 1) * (boardCase.GetSize().x + horizontalSpacing) / 2f;
@@ -242,6 +246,7 @@ public class BoardManager : MonoBehaviour, IGameManager
     public void PrepareParachuting(GameObject piece)
     {
         selectedPiece = piece;
+        PlaySFXSelected();
         UpdateTilesClickability(null, true);
     }
 
@@ -272,6 +277,7 @@ public class BoardManager : MonoBehaviour, IGameManager
             // got a piece on it
             if (piece)
             {
+                PlaySFXSelected();
                 //Debug.Log("piece : " + piece + "position : " + clickedPosition);
                 selectedPiece = piece;
                 selectedPiecePosition = clickedPosition;
@@ -415,5 +421,9 @@ public class BoardManager : MonoBehaviour, IGameManager
             pieceComponent.player = currentPlayerTurn;
             pieceComponent.idPlayer = (short)(currentPlayerTurn == player1 ? 1 : 2);
         }
+    }
+    public void PlaySFXSelected()
+    {
+        _sfxManager?.PlaySoundEffect(2);
     }
 }

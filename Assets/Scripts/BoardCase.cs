@@ -9,7 +9,8 @@ using UnityEngine.UIElements;
 public class BoardCase : MonoBehaviour
 {
     [SerializeField] private bool _isClickable = false;
-    [SerializeField] private VFX_Manager _vfxManager;
+    private VFX_Manager _vfxManager;
+    private SFXManager _sfxManager;
 
     public bool isClickable
     {
@@ -32,13 +33,13 @@ public class BoardCase : MonoBehaviour
     public void Awake()
     {
         _vfxManager = GameObject.Find("VFX_List").GetComponent<VFX_Manager>();
+        _sfxManager = GameObject.Find("SFXManager").GetComponent<SFXManager>();
     }
 
     public void OnMouseDown()
     {
         if (isClickable)
         {
-            //Debug.Log("CLICK");
             caseClicked(positionInBoard);
         }
     }
@@ -66,7 +67,7 @@ public class BoardCase : MonoBehaviour
     {
         // Changer le parent de la pièce pour la placer dans la case
         piece.transform.SetParent(transform);
-        PlayVFX();
+        PlayFX();
         piece.transform.rotation = Quaternion.Euler(0f, 0f, rotationZ);
         piece.transform.localPosition = Vector3.zero; // Réinitialiser la position locale
         piece.name = piece.name; // Optionnel : Mettre à jour le nom de l'objet
@@ -108,8 +109,9 @@ public class BoardCase : MonoBehaviour
         positionInBoard = position;
     }
 
-    public void PlayVFX()
+    public void PlayFX()
     {
-        _vfxManager.PlayAtIndex(4, this.transform.position);
+        _vfxManager?.PlayAtIndex(4, this.transform.position);
+        _sfxManager?.PlaySoundEffect(1);
     }
 }
