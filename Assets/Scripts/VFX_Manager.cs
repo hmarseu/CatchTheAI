@@ -25,10 +25,7 @@ namespace CartoonFX
 
         public void PlayAtIndex(int index, Vector3 position)
 		{
-			if (currentEffect != null)
-			{
-				currentEffect.SetActive(false);
-			}
+			
 			int indexWraped = WrapIndex(index);
 			currentEffect = effectsList[indexWraped];
             currentEffect.transform.position = position;
