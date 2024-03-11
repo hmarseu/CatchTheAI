@@ -4,6 +4,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
+using Unity.Mathematics;
 using Unity.VisualScripting;
 
 using UnityEngine;
@@ -95,7 +96,12 @@ public class BoardManager : MonoBehaviour, IGameManager
         player2.SetCamp(pl2);
         player2.SetName("joueur 2");
 
-        currentPlayerTurn = player1;
+        // select the starting player
+        int playerToStart = UnityEngine.Random.Range(1, 3);
+        Debug.Log(playerToStart);
+        if(playerToStart == 1) currentPlayerTurn = player1;
+        else currentPlayerTurn = player2;
+
         //Debug.Log($"player 1 {player1.GetName()} player 2 {player2.GetName()} et current player {currentPlayerTurn.GetName()}");
         //player1.StartTurn();
 
@@ -105,11 +111,11 @@ public class BoardManager : MonoBehaviour, IGameManager
     {
         // player 1
         selectedPiece = pionDictionary[0];
-        PlacePiece(new Vector2Int(0, 0), 1);
+        PlacePiece(new Vector2Int(0, 2), 1);
         selectedPiece = pionDictionary[1];
         PlacePiece(new Vector2Int(0, 1), 1);
         selectedPiece = pionDictionary[2];
-        PlacePiece(new Vector2Int(0, 2), 1);
+        PlacePiece(new Vector2Int(0, 0), 1);
         selectedPiece = pionDictionary[3];
         PlacePiece(new Vector2Int(1, 1), 1);
 
@@ -208,11 +214,12 @@ public class BoardManager : MonoBehaviour, IGameManager
     public static event CemeteryRemove removeButtonCemetary;
 
 
-    public void TransformationKodama(GameObject pieceToTransform,bool eaten)
+    public void TransformationKodama(GameObject pieceToTransform, bool eaten)
     {
         Piece piece = pieceToTransform.GetComponent<Piece>();
         if (!eaten && piece.soPiece.ePawnType == EPawnType.Kodama)
         {
+            _vfxManager.PlayAtIndex(11, piece.transform.position);
             piece.soPiece = kodamaSamurai;
             piece.remakeSprite();
 
@@ -228,11 +235,16 @@ public class BoardManager : MonoBehaviour, IGameManager
     {
         int row = position.x;
         int col = position.y;
-        
 
-        // si nouvelle position = bandeau final et selected piece = kodama et noparachuted alors transformation 
-        
-        // beaucoup de "if" mais c'est pour limité le getComponent sur les pieces a bouger
+        // check if there is already a piece
+        HandleEatingPiece(position);
+
+        // move the selected piece on the new case
+        if (player != 1) boardArray[row, col].GetComponent<BoardCase>().MovePiece(selectedPiece, 180f);
+        else boardArray[row, col].GetComponent<BoardCase>().MovePiece(selectedPiece);
+
+
+        // check if the kodama should transform 
         if (isParachuting)
         {
             removeButtonCemetary(selectedPiece);
@@ -241,17 +253,10 @@ public class BoardManager : MonoBehaviour, IGameManager
         {
             if (row == 0 || row == 3)
             {
-              // la fonction fait elle meme la verification du type de piece
-              TransformationKodama(selectedPiece,false);
+                // la fonction fait elle meme la verification du type de piece
+                TransformationKodama(selectedPiece, false);
             }
         }
-
-        // check if there is already a piece
-        HandleEatingPiece(position);
-
-        // move the selected piece on the new case
-        if (player != 1) boardArray[row, col].GetComponent<BoardCase>().MovePiece(selectedPiece, 180f);
-        else boardArray[row, col].GetComponent<BoardCase>().MovePiece(selectedPiece);
 
         selectedPiece = null;
         selectedPiecePosition = Vector2Int.zero;
