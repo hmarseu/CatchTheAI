@@ -482,7 +482,7 @@ public class BoardManager : MonoBehaviour, IGameManager
         // to play end sound
         _sfxManager.PlaySoundEffect(4);
        
-        StartCoroutine(ShowEndMenu(1));
+        StartCoroutine(ShowEndMenu(3));
     }
     public void ChangePieceTeam(GameObject piece)
     {
