@@ -14,4 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Image: {fileID: 21300000, guid: c2cb6599ace6daf44b66ad22017b12fa, type: 3}
   ePawnType: 1
-  PossibleMoves: 000100010001010101
+  PossibleMoves: 000101010001000101
