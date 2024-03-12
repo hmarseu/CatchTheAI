@@ -9,6 +9,14 @@ public class MoveManager : MonoBehaviour
 {
     public delegate void Possibilities(List<Vector2Int> tabPossibilite, bool parachuting);
     public static event Possibilities possibilities;
+
+    public delegate void KoropokkuruWin(int player);
+    public static event KoropokkuruWin koroWin;
+
+    public delegate void Sursis(Player player);
+    public static event Sursis sursis;
+
+
     private GameObject[,] tempBoardArray;
 
     [SerializeField] private Player player1;
@@ -32,25 +40,31 @@ public class MoveManager : MonoBehaviour
         List<Vector2Int> validMoves = GetValidMoves(so, position, player);
         possibilities(validMoves, false);
     }
-    private void CheckCanEatKor(Player player,SOPiece so,Vector2Int PosKor, Vector2Int[] position)
+    private void CheckCanEatKor(Player player,List<SOPiece> so,Vector2Int PosKor, List<Vector2Int> position)
     {
-        bool ended=false;
-        for (int i = 0; i < position.Length; i++)
+        
+        List<Vector2Int> finalList = new List<Vector2Int>();
+        for (int i = 0; i < position.Count; i++)
         {
-            List<Vector2Int> validMoves = GetValidMoves(so, position[i], player);
-            if (validMoves.Contains(PosKor))
+            List<Vector2Int> validMoves = GetValidMoves(so[i], position[i], player);
+            finalList.AddRange(validMoves);
+        }
+        if (finalList.Contains(PosKor))
+        {
+            sursis(player);
+        }
+        else
+        {
+            if (player.GetName() == "joueur 1")
             {
-                ended =false;
+                koroWin(1);
             }
             else
             {
-                ended=true;
+                koroWin(2);
             }
         }
-        if (ended)
-        {
-            //win player 
-        }
+        
        
     }
     private List<Vector2Int> GetValidMoves(SOPiece so, Vector2Int position, Player player)

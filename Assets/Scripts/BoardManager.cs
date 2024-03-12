@@ -14,8 +14,12 @@ using YokaiNoMori.Interface;
 
 public class BoardManager : MonoBehaviour, IGameManager
 {
+    int turnLeft = 0;
+    bool sursis=false;
+    Player POnSursis;
+
     //event 
-    public delegate void checkCanEatKoropokkuru(Player player,SOPiece pion, Vector2Int positionKor,Vector2Int[] positionPiece);
+    public delegate void checkCanEatKoropokkuru(Player player,List<SOPiece> listPion, Vector2Int positionKor,List<Vector2Int> listPosition);
     public static event checkCanEatKoropokkuru CheckEatKor;
 
     [SerializeField] private GameObject casePrefab;
@@ -74,31 +78,39 @@ public class BoardManager : MonoBehaviour, IGameManager
             }
         }
     }
-    private void PromotionZoneKoropokkuru(Vector2Int positionKor,int playerId)
+    private void PromotionZoneKoropokkuru(Vector2Int positionKor,Player player)
     {
         // verification de toutes les pieces autour si ils peuvent manger le roi 
-        // prends les positions des pieces ennemies presente sous forme de tableau -> movemanager avec l'event 
-
-        /* static List<object> GetObjetsAutour(object[,] tableau, int x, int y)
-    {
-        List<object> objetsAutour = new List<object>();
-
-        // Vérification de la présence des cases autour de la case spécifiée
-        for (int i = Math.Max(0, x - 1); i <= Math.Min(tableau.GetLength(0) - 1, x + 1); i++)
+        // prends les positions des pieces ennemies presente sous forme de liste -> movemanager avec l'event 
+        List<SOPiece> listSo = new();
+        List<Vector2Int> listPosition= new();
+        int radius = 1;
+        int startX = Mathf.Max(0, positionKor.x - radius);
+        int endX = Mathf.Min(boardArray.GetLength(0) - 1, positionKor.x + radius);
+        int startY = Mathf.Max(0, positionKor.y - radius);
+        int endY = Mathf.Min(boardArray.GetLength(1) - 1, positionKor.y + radius);
+        for (int x = startX; x <= endX; x++)
         {
-            for (int j = Math.Max(0, y - 1); j <= Math.Min(tableau.GetLength(1) - 1, y + 1); j++)
+            for (int y = startY; y <= endY; y++)
             {
-                // Vérification si la case n'est pas la case spécifiée
-                if (i != x || j != y)
+                GameObject obj = boardArray[x, y];
+                if (obj!=null && obj.transform.childCount > 0)
                 {
-                    // Ajout de l'objet dans la liste
-                    objetsAutour.Add(tableau[i, j]);
+                    Piece piece = obj.GetComponentInChildren<Piece>();
+                    if (piece.player != player) 
+                    {
+                        listSo.Add(piece.soPiece);
+                        listPosition.Add(new Vector2Int(x, y));
+                    }
+
                 }
             }
         }
+            
+        
 
-        return objetsAutour;
-    }*/
+        CheckEatKor(player, listSo, positionKor, listPosition);
+    
 
     }
     private void Awake()
@@ -237,11 +249,21 @@ public class BoardManager : MonoBehaviour, IGameManager
     public delegate void CemeteryRemove(GameObject selectedPiece);
     public static event CemeteryRemove removeButtonCemetary;
 
+    public void GetSursis(Player player)
+    {
+        sursis = true;
+        POnSursis = player;
+    }
 
-    public void TransformationKodama(GameObject pieceToTransform,bool eaten)
+    public void TransformationKodamaOrWinKoro(GameObject pieceToTransform,Vector2Int pos,bool eaten)
     {
         Piece piece = pieceToTransform.GetComponent<Piece>();
-        if (!eaten && piece.soPiece.ePawnType == EPawnType.Kodama)
+        if (piece.soPiece.ePawnType == EPawnType.Koropokkuru)
+        {
+            Debug.Log(piece.soPiece.ePawnType);
+            PromotionZoneKoropokkuru(pos, currentPlayerTurn);
+        }
+        else if (!eaten && piece.soPiece.ePawnType == EPawnType.Kodama)
         {
             piece.soPiece = kodamaSamurai;
             piece.remakeSprite();
@@ -271,8 +293,9 @@ public class BoardManager : MonoBehaviour, IGameManager
         {
             if (row == 0 || row == 3)
             {
-              // la fonction fait elle meme la verification du type de piece
-              TransformationKodama(selectedPiece,false);
+                // la fonction fait elle meme la verification du type de piece
+                Debug.Log("maybe");
+              TransformationKodamaOrWinKoro(selectedPiece,new Vector2Int(row,col),false);
             }
         }
 
@@ -303,6 +326,8 @@ public class BoardManager : MonoBehaviour, IGameManager
         BoardCase.caseClicked += OnCaseClicked;
         CemeteryButton.selectPiece += PrepareParachuting;
         MoveManager.possibilities += UpdateTilesClickability;
+        MoveManager.koroWin += End;
+        MoveManager.sursis += GetSursis;
     }
 
     private void OnDisable()
@@ -310,6 +335,7 @@ public class BoardManager : MonoBehaviour, IGameManager
         BoardCase.caseClicked -= OnCaseClicked;
         CemeteryButton.selectPiece -= PrepareParachuting;
         MoveManager.possibilities -= UpdateTilesClickability;
+        MoveManager.koroWin -= End;
     }
 
     public void PrepareParachuting(GameObject piece)
@@ -365,6 +391,8 @@ public class BoardManager : MonoBehaviour, IGameManager
 
     private void ChangeTurn()
     {
+        
+        
         bool player1IsPlaying;
         if (currentPlayerTurn == player1)
         {
@@ -376,6 +404,22 @@ public class BoardManager : MonoBehaviour, IGameManager
             currentPlayerTurn = player1;
             player1IsPlaying = true;
         }
+        if (turnLeft == 1)
+        {
+            if (POnSursis == player1)
+            {
+                End(1);
+            }
+            else
+            {
+                End(2);
+            }
+        }
+        if (sursis) 
+        {
+            turnLeft++;
+        }
+       
         // Debug.Log(currentPlayerTurn.GetName());
         cemeteryManager.SetCemeteryButtonsInteractability(player1IsPlaying);
         UpdateTilesAtTurnChange();
@@ -488,13 +532,14 @@ public class BoardManager : MonoBehaviour, IGameManager
                 End(playerId);
                 return;
             }
-            TransformationKodama(pieceToEat,true);
+            TransformationKodamaOrWinKoro(pieceToEat,newPosition,true);
             cemeteryManager.AddToCemetery(pieceToEat, playerId);
             ChangePieceTeam(pieceToEat);
         }
     }
     private void End(int player)
     {
+        
         isGameEnd = true;
         // ON GAME END
         // to play visual firewoks
