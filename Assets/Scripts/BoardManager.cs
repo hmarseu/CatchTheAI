@@ -3,12 +3,10 @@ using catchTheAI;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
-using Unity.VisualScripting;
 
 using UnityEngine;
-using UnityEngine.SceneManagement;
-using UnityEngine.UIElements;
 using YokaiNoMori.Enumeration;
 using YokaiNoMori.Interface;
 
@@ -22,37 +20,42 @@ public class BoardManager : MonoBehaviour, IGameManager
     public delegate void checkCanEatKoropokkuru(Player player,List<SOPiece> listPion, Vector2Int positionKor,List<Vector2Int> listPosition);
     public static event checkCanEatKoropokkuru CheckEatKor;
 
+    [Header("Board Properties")]
     [SerializeField] private GameObject casePrefab;
-    [SerializeField] private CemeteryManager cemeteryManager;
-
     [SerializeField] private int numberOfRows;
     [SerializeField] private int numberOfColumns;
     [SerializeField] private float horizontalSpacing;
     [SerializeField] private float verticalSpacing;
+    [SerializeField] private CemeteryManager cemeteryManager;
     [SerializeField] private List<GameObject> pionDictionary;
-
-    [SerializeField] private VFX_Manager _vfxManager;
-    private SFXManager _sfxManager;
-    [SerializeField] private GameObject EndMenu;
-
-    private bool isParachuting;
-    private bool isGameEnd = false;
-    private GameObject selectedPiece;
-
-    private Vector2Int selectedPiecePosition;
-
-    private BoardCase boardCase;
     private GameObject[,] boardArray; // Array that represent the board
+    private BoardCase boardCase;
 
-    public Player player1;
-    public Player player2;
-
-    public Player currentPlayerTurn;
-
+    [Header("Gameplay")]
     [SerializeField] SOPiece kodamaSamurai;
     [SerializeField] SOPiece kodama;
+    private GameObject selectedPiece;
+    private Vector2Int selectedPiecePosition;
+    public Player player1;
+    public Player player2;
+    public Player currentPlayerTurn;
+    private bool isParachuting;
+    private bool isGameEnd = false;
 
+    [Header("Player Moves")]
+    [SerializeField] private int maxMovesUntilDraw = 6;
+    private Dictionary<int, List<KeyValuePair<EPawnType, Vector2Int>>> playerMoves = new Dictionary<int, List<KeyValuePair<EPawnType, Vector2Int>>>();
+
+    [Header("Visual Effects")]
+    [SerializeField] private VFX_Manager _vfxManager;
+    [SerializeField] private SFXManager _sfxManager;
+    [SerializeField] private GameObject EndMenu;
     [SerializeField] TextMeshProUGUI winnerText;
+
+    // Events
+    public delegate void checkCanEatKoropokkuru(Player player, SOPiece pion, Vector2Int positionKor, Vector2Int[] positionPiece);
+    public static event checkCanEatKoropokkuru CheckEatKor;
+
 
     private void SetPlayerPiece()
     {
@@ -137,7 +140,11 @@ public class BoardManager : MonoBehaviour, IGameManager
         player2.SetCamp(pl2);
         player2.SetName("joueur 2");
 
-        currentPlayerTurn = player1;
+        // select the starting player
+        int playerToStart = UnityEngine.Random.Range(1, 3);
+        if(playerToStart == 1) currentPlayerTurn = player1;
+        else currentPlayerTurn = player2;
+
         //Debug.Log($"player 1 {player1.GetName()} player 2 {player2.GetName()} et current player {currentPlayerTurn.GetName()}");
         //player1.StartTurn();
 
@@ -147,11 +154,11 @@ public class BoardManager : MonoBehaviour, IGameManager
     {
         // player 1
         selectedPiece = pionDictionary[0];
-        PlacePiece(new Vector2Int(0, 0), 1);
+        PlacePiece(new Vector2Int(0, 2), 1);
         selectedPiece = pionDictionary[1];
         PlacePiece(new Vector2Int(0, 1), 1);
         selectedPiece = pionDictionary[2];
-        PlacePiece(new Vector2Int(0, 2), 1);
+        PlacePiece(new Vector2Int(0, 0), 1);
         selectedPiece = pionDictionary[3];
         PlacePiece(new Vector2Int(1, 1), 1);
 
@@ -265,6 +272,7 @@ public class BoardManager : MonoBehaviour, IGameManager
         }
         else if (!eaten && piece.soPiece.ePawnType == EPawnType.Kodama)
         {
+            _vfxManager.PlayAtIndex(11, piece.transform.position);
             piece.soPiece = kodamaSamurai;
             piece.remakeSprite();
 
@@ -280,11 +288,16 @@ public class BoardManager : MonoBehaviour, IGameManager
     {
         int row = position.x;
         int col = position.y;
-        
 
-        // si nouvelle position = bandeau final et selected piece = kodama et noparachuted alors transformation 
-        
-        // beaucoup de "if" mais c'est pour limité le getComponent sur les pieces a bouger
+        // check if there is already a piece
+        HandleEatingPiece(position);
+
+        // move the selected piece on the new case
+        if (player != 1) boardArray[row, col].GetComponent<BoardCase>().MovePiece(selectedPiece, 180f);
+        else boardArray[row, col].GetComponent<BoardCase>().MovePiece(selectedPiece);
+
+
+        // check if the kodama should transform 
         if (isParachuting)
         {
             removeButtonCemetary(selectedPiece);
@@ -298,13 +311,8 @@ public class BoardManager : MonoBehaviour, IGameManager
               TransformationKodamaOrWinKoro(selectedPiece,new Vector2Int(row,col),false);
             }
         }
-
-        // check if there is already a piece
-        HandleEatingPiece(position);
-
-        // move the selected piece on the new case
-        if (player != 1) boardArray[row, col].GetComponent<BoardCase>().MovePiece(selectedPiece, 180f);
-        else boardArray[row, col].GetComponent<BoardCase>().MovePiece(selectedPiece);
+        EPawnType pawnType = selectedPiece.GetComponent<Piece>().GetPawnType();
+        CheckPlayerHistory(position, player, pawnType);
 
         selectedPiece = null;
         selectedPiecePosition = Vector2Int.zero;
@@ -552,13 +560,6 @@ public class BoardManager : MonoBehaviour, IGameManager
             winnerText.text = player2.name;
         }
 
-        // to play visual firewoks
-        _vfxManager.PlayAtIndex(6, new Vector3(0, -3.50f, 0));
-        // to play end sound
-        _sfxManager.PlaySoundEffect(4);
-       
-        StartCoroutine(ShowEndMenu(3));
-    }
     public void ChangePieceTeam(GameObject piece)
     {
         Piece pieceComponent = piece.GetComponent<Piece>();
@@ -569,16 +570,109 @@ public class BoardManager : MonoBehaviour, IGameManager
             pieceComponent.idPlayer = (short)(currentPlayerTurn == player1 ? 1 : 2);
         }
     }
+
     public void PlaySFXSelected()
     {
         _sfxManager?.PlaySoundEffect(2);
     }
 
-    
+    private void End(int player)
+    {
+        isGameEnd = true;
+        // ON GAME END
+        // to play visual firewoks
+        if (player == 1)
+        {
+            winnerText.text = player1.name;
+        }
+        else if (player == 2)
+        {
+            winnerText.text = player2.name;
+        }
+        else
+        {
+            winnerText.text = "No one!\n(draw)";
+        }
+
+        // to play visual firewoks
+        _vfxManager.PlayAtIndex(6, new Vector3(0, -3.50f, 0));
+        // to play end sound
+        _sfxManager.PlaySoundEffect(4);
+
+        StartCoroutine(ShowEndMenu(3));
+    }
 
     IEnumerator ShowEndMenu(float delay)
     {
-        yield return new WaitForSecondsRealtime(delay); // Utiliser WaitForSecondsRealtime pour ignorer Time.timeScale
+        yield return new WaitForSecondsRealtime(delay);
         EndMenu.SetActive(true);
     }
+
+    // Check for draw
+    public void CheckPlayerHistory(Vector2Int newPosition, int playerId, EPawnType pawnType)
+    {
+        if (!playerMoves.ContainsKey(playerId))
+        {
+            playerMoves[playerId] = new List<KeyValuePair<EPawnType, Vector2Int>>();
+        }
+
+        List<KeyValuePair<EPawnType, Vector2Int>> moves = playerMoves[playerId];
+
+        if (moves.Count > 0)
+        {
+            KeyValuePair<EPawnType, Vector2Int> lastMove = moves[moves.Count - 1];
+
+            // CHECK IF SOMEONE MOVES A DIFFERENT PIECE
+            if (lastMove.Key != pawnType)
+            {
+                // for each player -> clear the list
+                foreach (var playerMovesList in playerMoves.Values)
+                {
+                    if (moves.Count > 0)
+                    {
+                        moves.RemoveRange(0, moves.Count);
+                    }
+                }
+                // Debug.LogWarning("Both players' moves cleared due to piece type change.");
+            }
+
+            else
+            {
+                // CHECK IF SOMEONE MOVES THE PIECE ON A DIFFERENT POSITION
+                if (!moves.Any(move => move.Value == newPosition && move.Key == pawnType) && moves.Count >= 3)
+                {
+                    // for each player -> clear the list
+                    foreach (var kvp in playerMoves)
+                    {
+                        List<KeyValuePair<EPawnType, Vector2Int>> movesList = kvp.Value;
+                        if (movesList.Count > 0)
+                        {
+                            movesList.RemoveRange(0, movesList.Count);
+                        }
+                    }
+                    // Debug.LogWarning("Player " + playerId + "'s moves cleared due to new position after the third move.");
+                }
+
+            }
+        }
+
+        moves.Add(new KeyValuePair<EPawnType, Vector2Int>(pawnType, newPosition));
+
+        // Does one of the players have 6 moves registered
+        if (moves.Count >= maxMovesUntilDraw)
+        {
+            int otherPlayerId = playerId == 1 ? 2 : 1;
+
+            // Check if both player did 6 same moves
+            if (playerMoves.ContainsKey(otherPlayerId) && playerMoves[otherPlayerId].Count >= maxMovesUntilDraw)
+            {
+                // Draw
+                End(-1);
+            }
+        }
+    }
+
+
+
+
 }

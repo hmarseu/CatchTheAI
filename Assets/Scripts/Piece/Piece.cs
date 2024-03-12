@@ -10,14 +10,12 @@ public class Piece : MonoBehaviour,IPawn
     public SOPiece soPiece;
     public Player player;
     public short idPlayer;
-    public short idPiece;
 
     private void Start()
     {
-        // V�rifiez que soPiece n'est pas nul avant d'acc�der � son Sprite
         if (soPiece != null && soPiece.Image != null)
         {
-            // V�rifiez si un SpriteRenderer est d�j� attach�
+            // sprite renderer already attached?
             SpriteRenderer sr = gameObject.GetComponent<SpriteRenderer>();
             if (sr == null)
             {
@@ -38,7 +36,7 @@ public class Piece : MonoBehaviour,IPawn
     // has been eaten
     protected virtual void Defeated()
     {
-        // sors du terrain
+        
     }
 
     public List<Vector2Int> GetDirections()

@@ -823,10 +823,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: VFX_List
       objectReference: {fileID: 0}
-    - target: {fileID: 3257060948749247171, guid: e2d09cc57b334f74f90a4d1b04abc27b, type: 3}
-      propertyPath: SubModule.subEmitters.Array.data[1].emitter
-      value: 
-      objectReference: {fileID: 0}
     - target: {fileID: 7825751906980999959, guid: e2d09cc57b334f74f90a4d1b04abc27b, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
