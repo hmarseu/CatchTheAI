@@ -3,6 +3,7 @@ using catchTheAI;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using Unity.VisualScripting;
 
@@ -298,6 +299,8 @@ public class BoardManager : MonoBehaviour, IGameManager
               TransformationKodamaOrWinKoro(selectedPiece,new Vector2Int(row,col),false);
             }
         }
+        EPawnType pawnType = selectedPiece.GetComponent<Piece>().GetPawnType();
+        CheckPlayerHistory(position, player, pawnType);
 
         // check if there is already a piece
         HandleEatingPiece(position);
@@ -581,4 +584,68 @@ public class BoardManager : MonoBehaviour, IGameManager
         yield return new WaitForSecondsRealtime(delay); // Utiliser WaitForSecondsRealtime pour ignorer Time.timeScale
         EndMenu.SetActive(true);
     }
+
+    public void CheckPlayerHistory(Vector2Int newPosition, int playerId, EPawnType pawnType)
+    {
+        if (!playerMoves.ContainsKey(playerId))
+        {
+            playerMoves[playerId] = new List<KeyValuePair<EPawnType, Vector2Int>>();
+        }
+
+        List<KeyValuePair<EPawnType, Vector2Int>> moves = playerMoves[playerId];
+
+        if (moves.Count > 0)
+        {
+            KeyValuePair<EPawnType, Vector2Int> lastMove = moves[moves.Count - 1];
+
+            // CHECK IF SOMEONE MOVES A DIFFERENT PIECE
+            if (lastMove.Key != pawnType)
+            {
+                // for each player -> clear the list
+                foreach (var playerMovesList in playerMoves.Values)
+                {
+                    if (moves.Count > 0)
+                    {
+                        moves.RemoveRange(0, moves.Count);
+                    }
+                }
+                // Debug.LogWarning("Both players' moves cleared due to piece type change.");
+            }
+
+            else
+            {
+                // CHECK IF SOMEONE MOVES THE PIECE ON A DIFFERENT POSITION
+                if (!moves.Any(move => move.Value == newPosition && move.Key == pawnType) && moves.Count >= 3)
+                {
+                    // for each player -> clear the list
+                    foreach (var kvp in playerMoves)
+                    {
+                        List<KeyValuePair<EPawnType, Vector2Int>> movesList = kvp.Value;
+                        if (movesList.Count > 0)
+                        {
+                            movesList.RemoveRange(0, movesList.Count);
+                        }
+                    }
+                    // Debug.LogWarning("Player " + playerId + "'s moves cleared due to new position after the third move.");
+                }
+
+            }
+        }
+
+        moves.Add(new KeyValuePair<EPawnType, Vector2Int>(pawnType, newPosition));
+
+        // Does one of the players have 6 moves registered
+        if (moves.Count >= maxMovesUntilDraw)
+        {
+            int otherPlayerId = playerId == 1 ? 2 : 1;
+
+            // Check if both player did 6 same moves
+            if (playerMoves.ContainsKey(otherPlayerId) && playerMoves[otherPlayerId].Count >= maxMovesUntilDraw)
+            {
+                // Draw
+                End(-1);
+            }
+        }
+    }
+
 }
