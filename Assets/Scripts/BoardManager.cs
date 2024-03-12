@@ -3,6 +3,7 @@ using catchTheAI;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using Unity.Mathematics;
 using Unity.VisualScripting;
@@ -257,6 +258,7 @@ public class BoardManager : MonoBehaviour, IGameManager
                 TransformationKodama(selectedPiece, false);
             }
         }
+        CheckPlayerHistory(selectedPiece.GetComponent<Piece>(), position, player);
 
         selectedPiece = null;
         selectedPiecePosition = Vector2Int.zero;
@@ -504,11 +506,100 @@ public class BoardManager : MonoBehaviour, IGameManager
         _sfxManager?.PlaySoundEffect(2);
     }
 
-    
-
     IEnumerator ShowEndMenu(float delay)
     {
         yield return new WaitForSecondsRealtime(delay); // Utiliser WaitForSecondsRealtime pour ignorer Time.timeScale
         EndMenu.SetActive(true);
     }
+
+
+
+    private Dictionary<int, List<KeyValuePair<int, Vector2Int>>> playerMoves = new Dictionary<int, List<KeyValuePair<int, Vector2Int>>>();
+    private int maxMoves = 6;
+
+    // Ajouter le mouvement du joueur à la liste correspondante
+    // TODO : switch "pieceId" pcq la cest une variable qui est jamais remplie enft
+    public void CheckPlayerHistory(Piece piece, Vector2Int newPosition, int playerId)
+    {
+        if (!playerMoves.ContainsKey(playerId))
+        {
+            playerMoves[playerId] = new List<KeyValuePair<int, Vector2Int>>();
+        }
+
+        List<KeyValuePair<int, Vector2Int>> moves = playerMoves[playerId];
+        int pieceId = piece.idPiece;
+
+        if (moves.Count > 0)
+        {
+            KeyValuePair<int, Vector2Int> lastMove = moves[moves.Count - 1];
+
+            Debug.Log("piece id = " + pieceId + " last id = " + lastMove.Key);
+            // VERIFICATION SI L'UN D'EUX DÉPLACE UNE PIECE AVEC UN ID DIFFÉRENT
+            if (lastMove.Key != pieceId)
+            {
+                foreach (var playerMovesList in playerMoves.Values)
+                {
+                    if (moves.Count > 1)
+                    {
+                        moves.RemoveRange(0, moves.Count - 1); // Garde uniquement le dernier mouvement
+                    }
+                }
+                Debug.LogWarning("Both players' moves cleared due to piece ID change.");
+            }
+
+            else
+            {
+                // VERIFICATION SI L'UN D'EUX DÉPLACE LA PIÈCE SUR UNE NOUVELLE POSITION
+                if (!moves.Any(move => move.Value == newPosition) && moves.Count >= 3)
+                {
+                    // Pour chaque joueur, conservez les deux derniers mouvements
+                    foreach (var kvp in playerMoves)
+                    {
+                        List<KeyValuePair<int, Vector2Int>> movesList = kvp.Value;
+                        if (movesList.Count > 2)
+                        {
+                            movesList.RemoveRange(0, movesList.Count - 2);
+                        }
+                    }
+                    Debug.LogWarning("Player " + playerId + "'s moves cleared due to new position after the third move.");
+                }
+
+            }
+        }
+
+        moves.Add(new KeyValuePair<int, Vector2Int>(pieceId, newPosition));
+
+        Debug.Log("Player " + playerId + " - Number of moves: " + moves.Count);
+
+        // VERIFICATION SI L'UN D'EUX A AU MOINS 6 ELEMENTS DANS SA LISTE
+        if (moves.Count >= maxMoves)
+        {
+            // Récupérez l'autre joueur
+            int otherPlayerId = OtherPlayer(playerId);
+
+            // Vérifiez si l'autre joueur a aussi au moins 6 mouvements
+            if (playerMoves.ContainsKey(otherPlayerId) && playerMoves[otherPlayerId].Count >= maxMoves)
+            {
+                // Déclarez un match nul
+                Debug.Log("Both players made a round trip with the same piece. Draw!");
+                EndGame();
+            }
+        }
+    }
+
+    // Méthode pour récupérer l'ID de l'autre joueur
+    private int OtherPlayer(int playerId)
+    {
+        return playerId == 1 ? 2 : 1;
+    }
+
+    // Méthode appelée à la fin du jeu
+    private void EndGame()
+    {
+        Debug.Log("Game ended in a draw.");
+    }
+
+
+
+
 }
