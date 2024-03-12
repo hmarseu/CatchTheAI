@@ -16,6 +16,10 @@ using YokaiNoMori.Interface;
 
 public class BoardManager : MonoBehaviour, IGameManager
 {
+    //event 
+    public delegate void checkCanEatKoropokkuru(Player player,SOPiece pion, Vector2Int positionKor,Vector2Int[] positionPiece);
+    public static event checkCanEatKoropokkuru CheckEatKor;
+
     [SerializeField] private GameObject casePrefab;
     [SerializeField] private CemeteryManager cemeteryManager;
 
@@ -72,7 +76,33 @@ public class BoardManager : MonoBehaviour, IGameManager
             }
         }
     }
+    private void PromotionZoneKoropokkuru(Vector2Int positionKor,int playerId)
+    {
+        // verification de toutes les pieces autour si ils peuvent manger le roi 
+        // prends les positions des pieces ennemies presente sous forme de tableau -> movemanager avec l'event 
 
+        /* static List<object> GetObjetsAutour(object[,] tableau, int x, int y)
+    {
+        List<object> objetsAutour = new List<object>();
+
+        // Vérification de la présence des cases autour de la case spécifiée
+        for (int i = Math.Max(0, x - 1); i <= Math.Min(tableau.GetLength(0) - 1, x + 1); i++)
+        {
+            for (int j = Math.Max(0, y - 1); j <= Math.Min(tableau.GetLength(1) - 1, y + 1); j++)
+            {
+                // Vérification si la case n'est pas la case spécifiée
+                if (i != x || j != y)
+                {
+                    // Ajout de l'objet dans la liste
+                    objetsAutour.Add(tableau[i, j]);
+                }
+            }
+        }
+
+        return objetsAutour;
+    }*/
+
+    }
     private void Awake()
     {
         boardCase = casePrefab.GetComponent<BoardCase>();

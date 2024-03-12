@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using YokaiNoMori.Interface;
 using System.Linq;
+using UnityEngine.UIElements;
 
 public class MoveManager : MonoBehaviour
 {
@@ -16,11 +17,13 @@ public class MoveManager : MonoBehaviour
     private void OnEnable()
     {
         BoardManager.transferPion += PossibleMove;
+        BoardManager.CheckEatKor += CheckCanEatKor;
     }
 
     private void OnDisable()
     {
         BoardManager.transferPion -= PossibleMove;
+        BoardManager.CheckEatKor -= CheckCanEatKor;
     }
 
     private void PossibleMove(SOPiece so, Vector2Int position, GameObject[,] boardarray, Player player)
@@ -29,7 +32,27 @@ public class MoveManager : MonoBehaviour
         List<Vector2Int> validMoves = GetValidMoves(so, position, player);
         possibilities(validMoves, false);
     }
-
+    private void CheckCanEatKor(Player player,SOPiece so,Vector2Int PosKor, Vector2Int[] position)
+    {
+        bool ended=false;
+        for (int i = 0; i < position.Length; i++)
+        {
+            List<Vector2Int> validMoves = GetValidMoves(so, position[i], player);
+            if (validMoves.Contains(PosKor))
+            {
+                ended =false;
+            }
+            else
+            {
+                ended=true;
+            }
+        }
+        if (ended)
+        {
+            //win player 
+        }
+       
+    }
     private List<Vector2Int> GetValidMoves(SOPiece so, Vector2Int position, Player player)
     {
         List<Vector2Int> validMoves = new List<Vector2Int>();
