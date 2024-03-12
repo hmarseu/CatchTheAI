@@ -40,6 +40,7 @@ public class MoveManager : MonoBehaviour
         List<Vector2Int> validMoves = GetValidMoves(so, position, player);
         possibilities(validMoves, false);
     }
+
     private void CheckCanEatKor(Player player,List<SOPiece> so,Vector2Int PosKor, List<Vector2Int> position)
     {
         
@@ -67,6 +68,7 @@ public class MoveManager : MonoBehaviour
         
        
     }
+
     private List<Vector2Int> GetValidMoves(SOPiece so, Vector2Int position, Player player)
     {
         List<Vector2Int> validMoves = new List<Vector2Int>();

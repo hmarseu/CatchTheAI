@@ -9,6 +9,4 @@ public class SOPiece : ScriptableObject
     public Sprite Image;
     public EPawnType ePawnType;
     public List<bool> PossibleMoves;
-
-
 }

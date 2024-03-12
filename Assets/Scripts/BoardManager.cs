@@ -15,47 +15,45 @@ using YokaiNoMori.Interface;
 
 public class BoardManager : MonoBehaviour, IGameManager
 {
-    [SerializeField] private int maxMovesUntilDraw = 6;
-    private Dictionary<int, List<KeyValuePair<EPawnType, Vector2Int>>> playerMoves = new Dictionary<int, List<KeyValuePair<EPawnType, Vector2Int>>>();
     int turnLeft = 0;
-    bool sursis=false;
+    bool sursis = false;
     Player POnSursis;
 
-    //event 
-    public delegate void checkCanEatKoropokkuru(Player player,List<SOPiece> listPion, Vector2Int positionKor,List<Vector2Int> listPosition);
-    public static event checkCanEatKoropokkuru CheckEatKor;
-
+    [Header("Board Properties")]
     [SerializeField] private GameObject casePrefab;
-    [SerializeField] private CemeteryManager cemeteryManager;
-
     [SerializeField] private int numberOfRows;
     [SerializeField] private int numberOfColumns;
     [SerializeField] private float horizontalSpacing;
     [SerializeField] private float verticalSpacing;
+    [SerializeField] private CemeteryManager cemeteryManager;
     [SerializeField] private List<GameObject> pionDictionary;
-
-    [SerializeField] private VFX_Manager _vfxManager;
-    private SFXManager _sfxManager;
-    [SerializeField] private GameObject EndMenu;
-
-    private bool isParachuting;
-    private bool isGameEnd = false;
-    private GameObject selectedPiece;
-
-    private Vector2Int selectedPiecePosition;
-
-    private BoardCase boardCase;
     private GameObject[,] boardArray; // Array that represent the board
+    private BoardCase boardCase;
 
-    public Player player1;
-    public Player player2;
-
-    public Player currentPlayerTurn;
-
+    [Header("Gameplay")]
     [SerializeField] SOPiece kodamaSamurai;
     [SerializeField] SOPiece kodama;
+    private GameObject selectedPiece;
+    private Vector2Int selectedPiecePosition;
+    public Player player1;
+    public Player player2;
+    public Player currentPlayerTurn;
+    private bool isParachuting;
+    private bool isGameEnd = false;
 
+    [Header("Player Moves")]
+    [SerializeField] private int maxMovesUntilDraw = 6;
+    private Dictionary<int, List<KeyValuePair<EPawnType, Vector2Int>>> playerMoves = new Dictionary<int, List<KeyValuePair<EPawnType, Vector2Int>>>();
+
+    [Header("Visual Effects")]
+    [SerializeField] private VFX_Manager _vfxManager;
+    [SerializeField] private SFXManager _sfxManager;
+    [SerializeField] private GameObject EndMenu;
     [SerializeField] TextMeshProUGUI winnerText;
+
+    // Events
+    public delegate void checkCanEatKoropokkuru(Player player, List<SOPiece> listPion, Vector2Int positionKor, List<Vector2Int> listPosition);
+    public static event checkCanEatKoropokkuru CheckEatKor;
 
     private void SetPlayerPiece()
     {
@@ -81,10 +79,11 @@ public class BoardManager : MonoBehaviour, IGameManager
             }
         }
     }
+
     private void PromotionZoneKoropokkuru(Vector2Int positionKor,Player player)
     {
-        // verification de toutes les pieces autour si ils peuvent manger le roi 
-        // prends les positions des pieces ennemies presente sous forme de liste -> movemanager avec l'event 
+        // check if the pieces can eat the king
+        // get all pieces position in a list -> movemanager with the event
         List<SOPiece> listSo = new();
         List<Vector2Int> listPosition= new();
         int radius = 1;
@@ -109,13 +108,10 @@ public class BoardManager : MonoBehaviour, IGameManager
                 }
             }
         }
-            
-        
 
         CheckEatKor(player, listSo, positionKor, listPosition);
-    
-
     }
+
     private void Awake()
     {
         boardCase = casePrefab.GetComponent<BoardCase>();
@@ -130,6 +126,7 @@ public class BoardManager : MonoBehaviour, IGameManager
         CreationOfPlayer();
         UpdateTilesAtTurnChange();
     }
+
     private void CreationOfPlayer()
     {
         ECampType pl1 = ECampType.PLAYER_ONE;
@@ -141,20 +138,19 @@ public class BoardManager : MonoBehaviour, IGameManager
         player2.SetName("joueur 2");
 
         currentPlayerTurn = player1;
-        //Debug.Log($"player 1 {player1.GetName()} player 2 {player2.GetName()} et current player {currentPlayerTurn.GetName()}");
-        //player1.StartTurn();
 
         SetPlayerPiece();
     }
+
     private void StartFillArray()
     {
         // player 1
         selectedPiece = pionDictionary[0];
-        PlacePiece(new Vector2Int(0, 0), 1);
+        PlacePiece(new Vector2Int(0, 2), 1);
         selectedPiece = pionDictionary[1];
         PlacePiece(new Vector2Int(0, 1), 1);
         selectedPiece = pionDictionary[2];
-        PlacePiece(new Vector2Int(0, 2), 1);
+        PlacePiece(new Vector2Int(0, 0), 1);
         selectedPiece = pionDictionary[3];
         PlacePiece(new Vector2Int(1, 1), 1);
 
@@ -168,7 +164,6 @@ public class BoardManager : MonoBehaviour, IGameManager
         selectedPiece = pionDictionary[3];
         PlacePiece(new Vector2Int(2, 1), 2);
     }
-
     private void GenerateBoard()
     {
         _sfxManager?.PlaySoundEffect(0);
@@ -227,7 +222,6 @@ public class BoardManager : MonoBehaviour, IGameManager
                     rowContent += ", ";
                 }
             }
-            //Debug.Log(i + ": " + rowContent);
         }
     }
 
@@ -267,7 +261,6 @@ public class BoardManager : MonoBehaviour, IGameManager
         Piece piece = pieceToTransform.GetComponent<Piece>();
         if (piece.soPiece.ePawnType == EPawnType.Koropokkuru)
         {
-            Debug.Log(piece.soPiece.ePawnType);
             PromotionZoneKoropokkuru(pos, currentPlayerTurn);
         }
         else if (!eaten && piece.soPiece.ePawnType == EPawnType.Kodama)
@@ -282,16 +275,13 @@ public class BoardManager : MonoBehaviour, IGameManager
              piece.remakeSprite();
          }
     }
+
     // to move a piece to a new position
     public void MovePiece(Vector2Int position, int player = 1)
     {
         int row = position.x;
         int col = position.y;
         
-
-        // si nouvelle position = bandeau final et selected piece = kodama et noparachuted alors transformation 
-        
-        // beaucoup de "if" mais c'est pour limité le getComponent sur les pieces a bouger
         if (isParachuting)
         {
             removeButtonCemetary(selectedPiece);
@@ -300,11 +290,11 @@ public class BoardManager : MonoBehaviour, IGameManager
         {
             if (row == 0 || row == 3)
             {
-                // la fonction fait elle meme la verification du type de piece
-                Debug.Log("maybe");
-              TransformationKodamaOrWinKoro(selectedPiece,new Vector2Int(row,col),false);
+                // function is doing the verification of the piece type
+                TransformationKodamaOrWinKoro(selectedPiece, new Vector2Int(row,col), false);
             }
         }
+
         EPawnType pawnType = selectedPiece.GetComponent<Piece>().GetPawnType();
         CheckPlayerHistory(position, player, pawnType);
 
@@ -387,7 +377,6 @@ public class BoardManager : MonoBehaviour, IGameManager
                 if (piece)
                 {
                     PlaySFXSelected();
-                    //Debug.Log("piece : " + piece + "position : " + clickedPosition);
                     selectedPiece = piece;
                     selectedPiecePosition = clickedPosition;
 
@@ -400,8 +389,6 @@ public class BoardManager : MonoBehaviour, IGameManager
 
     private void ChangeTurn()
     {
-        
-        
         bool player1IsPlaying;
         if (currentPlayerTurn == player1)
         {
@@ -429,7 +416,6 @@ public class BoardManager : MonoBehaviour, IGameManager
             turnLeft++;
         }
        
-        // Debug.Log(currentPlayerTurn.GetName());
         cemeteryManager.SetCemeteryButtonsInteractability(player1IsPlaying);
         UpdateTilesAtTurnChange();
     }
@@ -529,6 +515,7 @@ public class BoardManager : MonoBehaviour, IGameManager
     {
         throw new NotImplementedException();
     }
+
     private void HandleEatingPiece(Vector2Int newPosition)
     {
         GameObject pieceToEat = GetPieceAtPosition(newPosition);
@@ -546,19 +533,22 @@ public class BoardManager : MonoBehaviour, IGameManager
             ChangePieceTeam(pieceToEat);
         }
     }
+
     private void End(int player)
     {
-        
         isGameEnd = true;
-        // ON GAME END
-        // to play visual firewoks
+
         if (player == 1)
         {
             winnerText.text = player1.name;
         }
-        else 
+        else if (player == 2)
         {
             winnerText.text = player2.name;
+        }
+        else
+        {
+            winnerText.text = "No one!\n(draw)";
         }
 
         // to play visual firewoks
@@ -568,6 +558,7 @@ public class BoardManager : MonoBehaviour, IGameManager
        
         StartCoroutine(ShowEndMenu(3));
     }
+
     public void ChangePieceTeam(GameObject piece)
     {
         Piece pieceComponent = piece.GetComponent<Piece>();
@@ -578,16 +569,15 @@ public class BoardManager : MonoBehaviour, IGameManager
             pieceComponent.idPlayer = (short)(currentPlayerTurn == player1 ? 1 : 2);
         }
     }
+
     public void PlaySFXSelected()
     {
         _sfxManager?.PlaySoundEffect(2);
     }
 
-    
-
     IEnumerator ShowEndMenu(float delay)
     {
-        yield return new WaitForSecondsRealtime(delay); // Utiliser WaitForSecondsRealtime pour ignorer Time.timeScale
+        yield return new WaitForSecondsRealtime(delay);
         EndMenu.SetActive(true);
     }
 
