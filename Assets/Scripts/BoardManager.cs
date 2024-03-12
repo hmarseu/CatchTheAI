@@ -15,6 +15,8 @@ using YokaiNoMori.Interface;
 
 public class BoardManager : MonoBehaviour, IGameManager
 {
+    [SerializeField] private int maxMovesUntilDraw = 6;
+    private Dictionary<int, List<KeyValuePair<EPawnType, Vector2Int>>> playerMoves = new Dictionary<int, List<KeyValuePair<EPawnType, Vector2Int>>>();
     int turnLeft = 0;
     bool sursis=false;
     Player POnSursis;
@@ -253,7 +255,11 @@ public class BoardManager : MonoBehaviour, IGameManager
     public void GetSursis(Player player)
     {
         sursis = true;
-        POnSursis = player;
+        if (POnSursis == null)
+        {
+            POnSursis = player;
+
+        }
     }
 
     public void TransformationKodamaOrWinKoro(GameObject pieceToTransform,Vector2Int pos,bool eaten)
