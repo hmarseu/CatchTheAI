@@ -5,52 +5,49 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
-using Unity.Mathematics;
-using Unity.VisualScripting;
 
 using UnityEngine;
-using UnityEngine.SceneManagement;
-using UnityEngine.UIElements;
 using YokaiNoMori.Enumeration;
 using YokaiNoMori.Interface;
 
 public class BoardManager : MonoBehaviour, IGameManager
 {
-    //event 
-    public delegate void checkCanEatKoropokkuru(Player player,SOPiece pion, Vector2Int positionKor,Vector2Int[] positionPiece);
-    public static event checkCanEatKoropokkuru CheckEatKor;
-
+    [Header("Board Properties")]
     [SerializeField] private GameObject casePrefab;
-    [SerializeField] private CemeteryManager cemeteryManager;
-
     [SerializeField] private int numberOfRows;
     [SerializeField] private int numberOfColumns;
     [SerializeField] private float horizontalSpacing;
     [SerializeField] private float verticalSpacing;
+    [SerializeField] private CemeteryManager cemeteryManager;
     [SerializeField] private List<GameObject> pionDictionary;
-
-    [SerializeField] private VFX_Manager _vfxManager;
-    private SFXManager _sfxManager;
-    [SerializeField] private GameObject EndMenu;
-
-    private bool isParachuting;
-    private bool isGameEnd = false;
-    private GameObject selectedPiece;
-
-    private Vector2Int selectedPiecePosition;
-
-    private BoardCase boardCase;
     private GameObject[,] boardArray; // Array that represent the board
+    private BoardCase boardCase;
 
-    public Player player1;
-    public Player player2;
-
-    public Player currentPlayerTurn;
-
+    [Header("Gameplay")]
     [SerializeField] SOPiece kodamaSamurai;
     [SerializeField] SOPiece kodama;
+    private GameObject selectedPiece;
+    private Vector2Int selectedPiecePosition;
+    public Player player1;
+    public Player player2;
+    public Player currentPlayerTurn;
+    private bool isParachuting;
+    private bool isGameEnd = false;
 
+    [Header("Player Moves")]
+    [SerializeField] private int maxMovesUntilDraw = 6;
+    private Dictionary<int, List<KeyValuePair<EPawnType, Vector2Int>>> playerMoves = new Dictionary<int, List<KeyValuePair<EPawnType, Vector2Int>>>();
+
+    [Header("Visual Effects")]
+    [SerializeField] private VFX_Manager _vfxManager;
+    [SerializeField] private SFXManager _sfxManager;
+    [SerializeField] private GameObject EndMenu;
     [SerializeField] TextMeshProUGUI winnerText;
+
+    // Events
+    public delegate void checkCanEatKoropokkuru(Player player, SOPiece pion, Vector2Int positionKor, Vector2Int[] positionPiece);
+    public static event checkCanEatKoropokkuru CheckEatKor;
+
 
     private void SetPlayerPiece()
     {
@@ -129,7 +126,6 @@ public class BoardManager : MonoBehaviour, IGameManager
 
         // select the starting player
         int playerToStart = UnityEngine.Random.Range(1, 3);
-        Debug.Log(playerToStart);
         if(playerToStart == 1) currentPlayerTurn = player1;
         else currentPlayerTurn = player2;
 
@@ -288,7 +284,8 @@ public class BoardManager : MonoBehaviour, IGameManager
                 TransformationKodama(selectedPiece, false);
             }
         }
-        CheckPlayerHistory(selectedPiece.GetComponent<Piece>(), position, player);
+        EPawnType pawnType = selectedPiece.GetComponent<Piece>().GetPawnType();
+        CheckPlayerHistory(position, player, pawnType);
 
         selectedPiece = null;
         selectedPiecePosition = Vector2Int.zero;
@@ -500,27 +497,7 @@ public class BoardManager : MonoBehaviour, IGameManager
             ChangePieceTeam(pieceToEat);
         }
     }
-    private void End(int player)
-    {
-        isGameEnd = true;
-        // ON GAME END
-        // to play visual firewoks
-        if (player == 1)
-        {
-            winnerText.text = player1.name;
-        }
-        else 
-        {
-            winnerText.text = player2.name;
-        }
 
-        // to play visual firewoks
-        _vfxManager.PlayAtIndex(6, new Vector3(0, -3.50f, 0));
-        // to play end sound
-        _sfxManager.PlaySoundEffect(4);
-       
-        StartCoroutine(ShowEndMenu(3));
-    }
     public void ChangePieceTeam(GameObject piece)
     {
         Piece pieceComponent = piece.GetComponent<Piece>();
@@ -531,102 +508,106 @@ public class BoardManager : MonoBehaviour, IGameManager
             pieceComponent.idPlayer = (short)(currentPlayerTurn == player1 ? 1 : 2);
         }
     }
+
     public void PlaySFXSelected()
     {
         _sfxManager?.PlaySoundEffect(2);
     }
 
+    private void End(int player)
+    {
+        isGameEnd = true;
+        // ON GAME END
+        // to play visual firewoks
+        if (player == 1)
+        {
+            winnerText.text = player1.name;
+        }
+        else if (player == 2)
+        {
+            winnerText.text = player2.name;
+        }
+        else
+        {
+            winnerText.text = "No one!\n(draw)";
+        }
+
+        // to play visual firewoks
+        _vfxManager.PlayAtIndex(6, new Vector3(0, -3.50f, 0));
+        // to play end sound
+        _sfxManager.PlaySoundEffect(4);
+
+        StartCoroutine(ShowEndMenu(3));
+    }
+
     IEnumerator ShowEndMenu(float delay)
     {
-        yield return new WaitForSecondsRealtime(delay); // Utiliser WaitForSecondsRealtime pour ignorer Time.timeScale
+        yield return new WaitForSecondsRealtime(delay);
         EndMenu.SetActive(true);
     }
 
-
-
-    private Dictionary<int, List<KeyValuePair<int, Vector2Int>>> playerMoves = new Dictionary<int, List<KeyValuePair<int, Vector2Int>>>();
-    private int maxMoves = 6;
-
-    // Ajouter le mouvement du joueur à la liste correspondante
-    // TODO : switch "pieceId" pcq la cest une variable qui est jamais remplie enft
-    public void CheckPlayerHistory(Piece piece, Vector2Int newPosition, int playerId)
+    // Check for draw
+    public void CheckPlayerHistory(Vector2Int newPosition, int playerId, EPawnType pawnType)
     {
         if (!playerMoves.ContainsKey(playerId))
         {
-            playerMoves[playerId] = new List<KeyValuePair<int, Vector2Int>>();
+            playerMoves[playerId] = new List<KeyValuePair<EPawnType, Vector2Int>>();
         }
 
-        List<KeyValuePair<int, Vector2Int>> moves = playerMoves[playerId];
-        int pieceId = piece.idPiece;
+        List<KeyValuePair<EPawnType, Vector2Int>> moves = playerMoves[playerId];
 
         if (moves.Count > 0)
         {
-            KeyValuePair<int, Vector2Int> lastMove = moves[moves.Count - 1];
+            KeyValuePair<EPawnType, Vector2Int> lastMove = moves[moves.Count - 1];
 
-            Debug.Log("piece id = " + pieceId + " last id = " + lastMove.Key);
-            // VERIFICATION SI L'UN D'EUX DÉPLACE UNE PIECE AVEC UN ID DIFFÉRENT
-            if (lastMove.Key != pieceId)
+            // CHECK IF SOMEONE MOVES A DIFFERENT PIECE
+            if (lastMove.Key != pawnType)
             {
+                // for each player -> clear the list
                 foreach (var playerMovesList in playerMoves.Values)
                 {
-                    if (moves.Count > 1)
+                    if (moves.Count > 0)
                     {
-                        moves.RemoveRange(0, moves.Count - 1); // Garde uniquement le dernier mouvement
+                        moves.RemoveRange(0, moves.Count);
                     }
                 }
-                Debug.LogWarning("Both players' moves cleared due to piece ID change.");
+                // Debug.LogWarning("Both players' moves cleared due to piece type change.");
             }
 
             else
             {
-                // VERIFICATION SI L'UN D'EUX DÉPLACE LA PIÈCE SUR UNE NOUVELLE POSITION
-                if (!moves.Any(move => move.Value == newPosition) && moves.Count >= 3)
+                // CHECK IF SOMEONE MOVES THE PIECE ON A DIFFERENT POSITION
+                if (!moves.Any(move => move.Value == newPosition && move.Key == pawnType) && moves.Count >= 3)
                 {
-                    // Pour chaque joueur, conservez les deux derniers mouvements
+                    // for each player -> clear the list
                     foreach (var kvp in playerMoves)
                     {
-                        List<KeyValuePair<int, Vector2Int>> movesList = kvp.Value;
-                        if (movesList.Count > 2)
+                        List<KeyValuePair<EPawnType, Vector2Int>> movesList = kvp.Value;
+                        if (movesList.Count > 0)
                         {
-                            movesList.RemoveRange(0, movesList.Count - 2);
+                            movesList.RemoveRange(0, movesList.Count);
                         }
                     }
-                    Debug.LogWarning("Player " + playerId + "'s moves cleared due to new position after the third move.");
+                    // Debug.LogWarning("Player " + playerId + "'s moves cleared due to new position after the third move.");
                 }
 
             }
         }
 
-        moves.Add(new KeyValuePair<int, Vector2Int>(pieceId, newPosition));
+        moves.Add(new KeyValuePair<EPawnType, Vector2Int>(pawnType, newPosition));
 
-        Debug.Log("Player " + playerId + " - Number of moves: " + moves.Count);
-
-        // VERIFICATION SI L'UN D'EUX A AU MOINS 6 ELEMENTS DANS SA LISTE
-        if (moves.Count >= maxMoves)
+        // Does one of the players have 6 moves registered
+        if (moves.Count >= maxMovesUntilDraw)
         {
-            // Récupérez l'autre joueur
-            int otherPlayerId = OtherPlayer(playerId);
+            int otherPlayerId = playerId == 1 ? 2 : 1;
 
-            // Vérifiez si l'autre joueur a aussi au moins 6 mouvements
-            if (playerMoves.ContainsKey(otherPlayerId) && playerMoves[otherPlayerId].Count >= maxMoves)
+            // Check if both player did 6 same moves
+            if (playerMoves.ContainsKey(otherPlayerId) && playerMoves[otherPlayerId].Count >= maxMovesUntilDraw)
             {
-                // Déclarez un match nul
-                Debug.Log("Both players made a round trip with the same piece. Draw!");
-                EndGame();
+                // Draw
+                End(-1);
             }
         }
-    }
-
-    // Méthode pour récupérer l'ID de l'autre joueur
-    private int OtherPlayer(int playerId)
-    {
-        return playerId == 1 ? 2 : 1;
-    }
-
-    // Méthode appelée à la fin du jeu
-    private void EndGame()
-    {
-        Debug.Log("Game ended in a draw.");
     }
 
 
