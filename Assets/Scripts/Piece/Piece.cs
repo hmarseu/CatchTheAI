@@ -9,6 +9,7 @@ public class Piece : MonoBehaviour,IPawn
 {
     public SOPiece soPiece;
     public Player player;
+    // LA faut juste les remplir
     public int idPlayer;
     public int idPiece;
 
