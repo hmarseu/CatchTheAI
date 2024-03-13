@@ -15,6 +15,8 @@ using YokaiNoMori.Interface;
 
 public class BoardManager : MonoBehaviour, IGameManager
 {
+    private int[,] pieceIds; // Array with all the position and the id of the pieces on the board
+
     int turnLeft = 0;
     bool sursis = false;
     Player POnSursis;
@@ -55,6 +57,11 @@ public class BoardManager : MonoBehaviour, IGameManager
     public delegate void checkCanEatKoropokkuru(Player player, List<SOPiece> listPion, Vector2Int positionKor, List<Vector2Int> listPosition);
     public static event checkCanEatKoropokkuru CheckEatKor;
 
+    private int[,] GetBoardWithIds()
+    {
+        return pieceIds;
+    }
+
     private void SetPlayerPiece()
     {
         for (int i = 0; i < numberOfRows; i++)
@@ -73,7 +80,7 @@ public class BoardManager : MonoBehaviour, IGameManager
                     {
 
                         boardArray[i, j].transform.GetChild(0).GetComponent<Piece>().player = player2;
-                        boardArray[i, j].transform.GetChild(0).GetComponent<Piece>().idPlayer = 2;
+                        boardArray[i, j].transform.GetChild(0).GetComponent<Piece>().idPlayer = -1;
                     }
                 }
             }
@@ -87,10 +94,13 @@ public class BoardManager : MonoBehaviour, IGameManager
         List<SOPiece> listSo = new();
         List<Vector2Int> listPosition= new();
         int radius = 1;
+
         int startX = Mathf.Max(0, positionKor.x - radius);
         int endX = Mathf.Min(boardArray.GetLength(0) - 1, positionKor.x + radius);
+
         int startY = Mathf.Max(0, positionKor.y - radius);
         int endY = Mathf.Min(boardArray.GetLength(1) - 1, positionKor.y + radius);
+
         for (int x = startX; x <= endX; x++)
         {
             for (int y = startY; y <= endY; y++)
@@ -120,6 +130,8 @@ public class BoardManager : MonoBehaviour, IGameManager
 
     private void Start()
     {
+        currentPlayerTurn = UnityEngine.Random.Range(1, 3) == 1 ? player1 : player2;
+
         GenerateBoard();
         StartFillArray();
         LogBoardArray();
@@ -136,8 +148,6 @@ public class BoardManager : MonoBehaviour, IGameManager
         player1.SetName("joueur 1");
         player2.SetCamp(pl2);
         player2.SetName("joueur 2");
-
-        currentPlayerTurn = player1;
 
         SetPlayerPiece();
     }
@@ -156,19 +166,20 @@ public class BoardManager : MonoBehaviour, IGameManager
 
         // player 2
         selectedPiece = pionDictionary[0];
-        PlacePiece(new Vector2Int(3, 0), 2);
+        PlacePiece(new Vector2Int(3, 0), -1);
         selectedPiece = pionDictionary[1];
-        PlacePiece(new Vector2Int(3, 1), 2);
+        PlacePiece(new Vector2Int(3, 1), -1);
         selectedPiece = pionDictionary[2];
-        PlacePiece(new Vector2Int(3, 2), 2);
+        PlacePiece(new Vector2Int(3, 2), -1);
         selectedPiece = pionDictionary[3];
-        PlacePiece(new Vector2Int(2, 1), 2);
+        PlacePiece(new Vector2Int(2, 1), -1);
     }
     private void GenerateBoard()
     {
         _sfxManager?.PlaySoundEffect(0);
 
         boardArray = new GameObject[numberOfRows, numberOfColumns];
+        pieceIds = new int[numberOfRows, numberOfColumns];
 
         float startX = -(numberOfColumns - 1) * (boardCase.GetSize().x + horizontalSpacing) / 2f;
         float startY = -(numberOfRows - 1) * (boardCase.GetSize().y + verticalSpacing) / 2f;
@@ -187,6 +198,9 @@ public class BoardManager : MonoBehaviour, IGameManager
                 // give to the case its position information
                 newCase.GetComponent<BoardCase>().DefinePositionOnBoard(new Vector2Int(i, j));
                 boardArray[i, j] = newCase;
+
+
+                pieceIds[i, j] = 0;
             }
         }
     }
@@ -225,12 +239,45 @@ public class BoardManager : MonoBehaviour, IGameManager
         }
     }
 
+    // debug
+    public void LogPieceIds()
+    {
+        if (pieceIds == null)
+        {
+            Debug.LogWarning("The pieceIds array is null.");
+            return;
+        }
+
+        int numRows = pieceIds.GetLength(0);
+        int numCols = pieceIds.GetLength(1);
+
+        for (int i = numRows - 1; i >= 0; i--)
+        {
+            string rowContent = "";
+            for (int j = 0; j < numCols; j++)
+            {
+                rowContent += pieceIds[i, j].ToString();
+
+                if (j < numCols - 1)
+                {
+                    rowContent += ", ";
+                }
+            }
+            Debug.Log(rowContent);
+        }
+    }
+
+
+
 
     // Create the selected GameObject piece at a specific position on the board.
     public void PlacePiece(Vector2Int position, int player = 1)
     {
         int row = position.x;
         int col = position.y;
+
+        int playerId = (player == 1) ? 1 : -1;
+        pieceIds[row, col] = playerId * selectedPiece.GetComponent<Piece>().idPiece;
 
         // instantiate the selected piece on the new case
         if (player != 1) boardArray[row, col].GetComponent<BoardCase>().InstantiatePiece(selectedPiece, 180f);
@@ -266,13 +313,15 @@ public class BoardManager : MonoBehaviour, IGameManager
         else if (!eaten && piece.soPiece.ePawnType == EPawnType.Kodama)
         {
             piece.soPiece = kodamaSamurai;
+            piece.idPiece = 2 * piece.idPlayer;
             piece.remakeSprite();
 
         }
          else if(eaten && piece.soPiece.ePawnType == EPawnType.KodamaSamurai)
          {
-             piece.soPiece = kodama;
-             piece.remakeSprite();
+            piece.soPiece = kodama;
+            piece.idPiece = 1 * piece.idPlayer;
+            piece.remakeSprite();
          }
     }
 
@@ -281,17 +330,21 @@ public class BoardManager : MonoBehaviour, IGameManager
     {
         int row = position.x;
         int col = position.y;
-        
+
         if (isParachuting)
         {
             removeButtonCemetary(selectedPiece);
         }
         else
         {
-            if (row == 0 || row == 3)
+            // previous position is now empty
+            pieceIds[selectedPiecePosition.x, selectedPiecePosition.y] = 0;
+
+            if ((row == 0 && player == -1)|| row == 3 && player == 1)
             {
                 // function is doing the verification of the piece type
                 TransformationKodamaOrWinKoro(selectedPiece, new Vector2Int(row,col), false);
+
             }
         }
 
@@ -304,6 +357,11 @@ public class BoardManager : MonoBehaviour, IGameManager
         // move the selected piece on the new case
         if (player != 1) boardArray[row, col].GetComponent<BoardCase>().MovePiece(selectedPiece, 180f);
         else boardArray[row, col].GetComponent<BoardCase>().MovePiece(selectedPiece);
+
+        // fill new position
+        Piece piece = selectedPiece.GetComponent<Piece>();
+        pieceIds[row, col] = piece.idPlayer * piece.idPiece;
+
 
         selectedPiece = null;
         selectedPiecePosition = Vector2Int.zero;
@@ -365,7 +423,7 @@ public class BoardManager : MonoBehaviour, IGameManager
                     return;
                 }
 
-                if (currentPlayerTurn == player2) MovePiece(clickedPosition, 2);
+                if (currentPlayerTurn == player2) MovePiece(clickedPosition, -1);
                 else MovePiece(clickedPosition, 1);
                 ChangeTurn();
             }
@@ -408,7 +466,7 @@ public class BoardManager : MonoBehaviour, IGameManager
             }
             else
             {
-                End(2);
+                End(-1);
             }
         }
         if (sursis) 
@@ -418,6 +476,7 @@ public class BoardManager : MonoBehaviour, IGameManager
        
         cemeteryManager.SetCemeteryButtonsInteractability(player1IsPlaying);
         UpdateTilesAtTurnChange();
+        LogPieceIds();
     }
 
     private GameObject GetPieceAtPosition(Vector2Int position)
@@ -526,6 +585,7 @@ public class BoardManager : MonoBehaviour, IGameManager
             if (pieceToEat.GetComponent<Piece>().soPiece.ePawnType == EPawnType.Koropokkuru)
             {
                 End(playerId);
+                Debug.Log("LAA");
                 return;
             }
             TransformationKodamaOrWinKoro(pieceToEat,newPosition,true);
@@ -537,12 +597,12 @@ public class BoardManager : MonoBehaviour, IGameManager
     private void End(int player)
     {
         isGameEnd = true;
-
+        Debug.Log(player);
         if (player == 1)
         {
             winnerText.text = player1.name;
         }
-        else if (player == 2)
+        else if (player == -1)
         {
             winnerText.text = player2.name;
         }
@@ -566,7 +626,7 @@ public class BoardManager : MonoBehaviour, IGameManager
         {
             // change the team of the piece
             pieceComponent.player = currentPlayerTurn;
-            pieceComponent.idPlayer = (short)(currentPlayerTurn == player1 ? 1 : 2);
+            pieceComponent.idPlayer = (short)(currentPlayerTurn == player1 ? 1 : -1);
         }
     }
 
@@ -633,13 +693,14 @@ public class BoardManager : MonoBehaviour, IGameManager
         // Does one of the players have 6 moves registered
         if (moves.Count >= maxMovesUntilDraw)
         {
-            int otherPlayerId = playerId == 1 ? 2 : 1;
+            int otherPlayerId = playerId == 1 ? -1 : 1;
 
             // Check if both player did 6 same moves
             if (playerMoves.ContainsKey(otherPlayerId) && playerMoves[otherPlayerId].Count >= maxMovesUntilDraw)
             {
                 // Draw
-                End(-1);
+                Debug.Log("DRAW");
+                End(0);
             }
         }
     }

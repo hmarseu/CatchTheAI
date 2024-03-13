@@ -9,8 +9,8 @@ public class Piece : MonoBehaviour,IPawn
 {
     public SOPiece soPiece;
     public Player player;
-    public short idPlayer;
-    public short idPiece;
+    public int idPlayer;
+    public int idPiece;
 
     private void Start()
     {

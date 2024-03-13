@@ -43,7 +43,6 @@ public class MoveManager : MonoBehaviour
 
     private void CheckCanEatKor(Player player,List<SOPiece> so,Vector2Int PosKor, List<Vector2Int> position)
     {
-        
         List<Vector2Int> finalList = new List<Vector2Int>();
         for (int i = 0; i < position.Count; i++)
         {
@@ -62,7 +61,7 @@ public class MoveManager : MonoBehaviour
             }
             else
             {
-                koroWin(2);
+                koroWin(-1);
             }
         }
         

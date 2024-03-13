@@ -47,4 +47,4 @@ MonoBehaviour:
   soPiece: {fileID: 11400000, guid: d429c031253d04d4a9a92180f0a62205, type: 2}
   player: {fileID: 0}
   idPlayer: 0
-  idPiece: 0
+  idPiece: 5

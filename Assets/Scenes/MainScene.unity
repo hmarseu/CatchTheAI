@@ -975,6 +975,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: HUD
       objectReference: {fileID: 0}
+    - target: {fileID: 4521801947439589342, guid: 0bb44e2af48738b41ae7ae83cdb1bbfe, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 7845246503778635992}
+    - target: {fileID: 4521801947439589342, guid: 0bb44e2af48738b41ae7ae83cdb1bbfe, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: TogglePause
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1109,6 +1117,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 3662af2c5ecd8cb4eace82f45d8c432e, type: 3}
+--- !u!114 &7845246503778635992 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2133774456082970580, guid: 3662af2c5ecd8cb4eace82f45d8c432e, type: 3}
+  m_PrefabInstance: {fileID: 7845246503778635991}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0423782ddd948c943bd9dd95c397189c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
