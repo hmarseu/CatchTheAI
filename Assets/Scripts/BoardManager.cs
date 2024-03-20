@@ -15,6 +15,8 @@ using YokaiNoMori.Interface;
 
 public class BoardManager : MonoBehaviour, IGameManager
 {
+    
+
     private int[,] pieceIds; // Array with all the position and the id of the pieces on the board
 
     int turnLeft = 0;
@@ -61,6 +63,7 @@ public class BoardManager : MonoBehaviour, IGameManager
 
     private void Start()
     {
+     
         currentPlayerTurn = UnityEngine.Random.Range(1, 3) == 1 ? player1 : player2;
 
         GenerateBoard();
@@ -118,8 +121,10 @@ public class BoardManager : MonoBehaviour, IGameManager
 
         player1.SetCamp(pl1);
         player1.SetName("joueur 1");
+        player1.idPlayer = 1;
         player2.SetCamp(pl2);
         player2.SetName("joueur 2");
+        player2.idPlayer = -1;
 
         SetPlayerPiece();
     }
@@ -459,6 +464,7 @@ public class BoardManager : MonoBehaviour, IGameManager
         {
             currentPlayerTurn = player2;
             player1IsPlaying = false;
+            
         }
         else
         {

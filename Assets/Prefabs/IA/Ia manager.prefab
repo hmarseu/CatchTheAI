@@ -1,0 +1,51 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &7881200872229471495
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5805733800685523261}
+  - component: {fileID: 2497938437097805865}
+  m_Layer: 0
+  m_Name: Ia manager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5805733800685523261
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7881200872229471495}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2497938437097805865
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7881200872229471495}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e88a2aa844a41944f8e769a5f51212b0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Kodama: {fileID: 11400000, guid: c675526a54fd65f469980a7855aa9370, type: 2}
+  KodamaSamourai: {fileID: 11400000, guid: dd91bf24a234d08459c1eaf9688f79f0, type: 2}
+  Kitsune: {fileID: 11400000, guid: 01b1331a429222841bed5dc95c8067eb, type: 2}
+  Koropokkuru: {fileID: 11400000, guid: d429c031253d04d4a9a92180f0a62205, type: 2}
+  Tanuki: {fileID: 11400000, guid: 0dbb091375e6b794c956c2ff3c7bbca0, type: 2}

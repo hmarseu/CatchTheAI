@@ -6,14 +6,16 @@ using YokaiNoMori.Interface;
 
 public class Player : MonoBehaviour, ICompetitor
 {
+    public int idPlayer;
     public BoardManager boardManager;
     private ECampType myCamp;
     private string name;
-
+    _tempMonteCarlo ia;
     public bool isAI;
 
     private void Start()
     {
+        ia = GameObject.FindObjectOfType<_tempMonteCarlo>();
         if (!boardManager) throw new System.ArgumentNullException();
     }
 
@@ -54,7 +56,7 @@ public class Player : MonoBehaviour, ICompetitor
 
             // get selected action type
             EActionType actionType = EActionType.MOVE;
-
+            ia.MonteCarloSearch(new Node(idPlayer, new Vector2Int(), null, null, boardManager.GetBoardWithIds()), 500);
             // do action
             boardManager.DoAction(pawnTarget, newPosition, actionType);
         }
