@@ -11,6 +11,7 @@ namespace catchTheAI
         [SerializeField] private GameObject deadZonePlayer2;
         [SerializeField] private GameObject parentDeadPieces;
 
+
         public void AddToCemetery(GameObject piece, int playerId)
         {
             GameObject cemetery = playerId == 1 ? deadZonePlayer1 : deadZonePlayer2;
@@ -41,6 +42,21 @@ namespace catchTheAI
             foreach (CemeteryButton button in cemeteryButtonsPlayer2)
             {
                 button.SetInteractability(!player1IsPlaying);
+            }
+        }
+
+        public void SetCemeteryButtonsProhibit()
+        {
+            CemeteryButton[] cemeteryButtonsPlayer1 = deadZonePlayer1.GetComponentsInChildren<CemeteryButton>();
+            CemeteryButton[] cemeteryButtonsPlayer2 = deadZonePlayer2.GetComponentsInChildren<CemeteryButton>();
+
+            foreach (CemeteryButton button in cemeteryButtonsPlayer1)
+            {
+                button.SetInteractability(false);
+            }
+            foreach (CemeteryButton button in cemeteryButtonsPlayer2)
+            {
+                button.SetInteractability(false);
             }
         }
 

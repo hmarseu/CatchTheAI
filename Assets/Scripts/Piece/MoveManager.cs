@@ -64,11 +64,9 @@ public class MoveManager : MonoBehaviour
                 koroWin(-1);
             }
         }
-        
-       
     }
 
-    private List<Vector2Int> GetValidMoves(SOPiece so, Vector2Int position, Player player)
+    public List<Vector2Int> GetValidMoves(SOPiece so, Vector2Int position, Player player)
     {
         List<Vector2Int> validMoves = new List<Vector2Int>();
         int[] deltaX;

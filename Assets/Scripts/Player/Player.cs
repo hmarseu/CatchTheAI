@@ -6,10 +6,17 @@ using YokaiNoMori.Interface;
 
 public class Player : MonoBehaviour, ICompetitor
 {
-
+    public BoardManager boardManager;
     private ECampType myCamp;
     private string name;
- 
+
+    public bool isAI;
+
+    private void Start()
+    {
+        if (!boardManager) throw new System.ArgumentNullException();
+    }
+
     public ECampType GetCamp()
     {
        return myCamp;
@@ -31,19 +38,31 @@ public class Player : MonoBehaviour, ICompetitor
 
     public void StartTurn()
     {
-        //donc tout va devoir se passer par la sur qui joue comment on joue 
-        throw new System.NotImplementedException();
+        // if the player is an IA
+        if (isAI)
+        {
+            // get a selectedPiece to play
+            IPawn pawnTarget = null;
+
+            // get a postion where to move
+            Vector2Int newPosition = new Vector2Int(0, 0);
+
+            // get selected action type
+            EActionType actionType = EActionType.MOVE;
+
+            // do action
+            boardManager.DoAction(pawnTarget, newPosition, actionType);
+        }
+        else
+        {
+            // do nothing, changeTurn already did it
+        }
     }
 
     public void StopTurn()
     {
-        //donc tout va devoir se passer par la sur comment on termine le tour
-        throw new System.NotImplementedException();
-    }
-
-    public void Init(IGameManager igameManager)
-    {
-        throw new System.NotImplementedException();
+        boardManager.ChangeTurn();
+        StartTurn();
     }
 
     public void Init(IGameManager igameManager, float timerForAI)

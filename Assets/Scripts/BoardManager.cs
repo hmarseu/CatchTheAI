@@ -53,6 +53,25 @@ public class BoardManager : MonoBehaviour, IGameManager
     [SerializeField] private GameObject EndMenu;
     [SerializeField] TextMeshProUGUI winnerText;
 
+    private void Awake()
+    {
+        boardCase = casePrefab.GetComponent<BoardCase>();
+        _sfxManager = GameObject.Find("SFXManager").GetComponent<SFXManager>();
+    }
+
+    private void Start()
+    {
+        currentPlayerTurn = UnityEngine.Random.Range(1, 3) == 1 ? player1 : player2;
+
+        GenerateBoard();
+        StartFillArray();
+        CreationOfPlayer();
+        // LogBoardArray();
+        // LogPieceIds();
+        UpdateTilesAtTurnChange();
+        StartGame();
+    }
+
     // Events
     public delegate void checkCanEatKoropokkuru(Player player, List<SOPiece> listPion, Vector2Int positionKor, List<Vector2Int> listPosition);
     public static event checkCanEatKoropokkuru CheckEatKor;
@@ -87,56 +106,9 @@ public class BoardManager : MonoBehaviour, IGameManager
         }
     }
 
-    private void PromotionZoneKoropokkuru(Vector2Int positionKor,Player player)
+    private void StartGame()
     {
-        // check if the pieces can eat the king
-        // get all pieces position in a list -> movemanager with the event
-        List<SOPiece> listSo = new();
-        List<Vector2Int> listPosition= new();
-        int radius = 1;
-
-        int startX = Mathf.Max(0, positionKor.x - radius);
-        int endX = Mathf.Min(boardArray.GetLength(0) - 1, positionKor.x + radius);
-
-        int startY = Mathf.Max(0, positionKor.y - radius);
-        int endY = Mathf.Min(boardArray.GetLength(1) - 1, positionKor.y + radius);
-
-        for (int x = startX; x <= endX; x++)
-        {
-            for (int y = startY; y <= endY; y++)
-            {
-                GameObject obj = boardArray[x, y];
-                if (obj!=null && obj.transform.childCount > 0)
-                {
-                    Piece piece = obj.GetComponentInChildren<Piece>();
-                    if (piece.player != player) 
-                    {
-                        listSo.Add(piece.soPiece);
-                        listPosition.Add(new Vector2Int(x, y));
-                    }
-
-                }
-            }
-        }
-
-        CheckEatKor(player, listSo, positionKor, listPosition);
-    }
-
-    private void Awake()
-    {
-        boardCase = casePrefab.GetComponent<BoardCase>();
-        _sfxManager = GameObject.Find("SFXManager").GetComponent<SFXManager>();
-    }
-
-    private void Start()
-    {
-        currentPlayerTurn = UnityEngine.Random.Range(1, 3) == 1 ? player1 : player2;
-
-        GenerateBoard();
-        StartFillArray();
-        LogBoardArray();
-        CreationOfPlayer();
-        UpdateTilesAtTurnChange();
+        currentPlayerTurn.StartTurn();
     }
 
     private void CreationOfPlayer()
@@ -267,8 +239,40 @@ public class BoardManager : MonoBehaviour, IGameManager
         }
     }
 
+    private void PromotionZoneKoropokkuru(Vector2Int positionKor, Player player)
+    {
+        // check if the pieces can eat the king
+        // get all pieces position in a list -> movemanager with the event
+        List<SOPiece> listSo = new();
+        List<Vector2Int> listPosition = new();
+        int radius = 1;
 
+        int startX = Mathf.Max(0, positionKor.x - radius);
+        int endX = Mathf.Min(boardArray.GetLength(0) - 1, positionKor.x + radius);
 
+        int startY = Mathf.Max(0, positionKor.y - radius);
+        int endY = Mathf.Min(boardArray.GetLength(1) - 1, positionKor.y + radius);
+
+        for (int x = startX; x <= endX; x++)
+        {
+            for (int y = startY; y <= endY; y++)
+            {
+                GameObject obj = boardArray[x, y];
+                if (obj != null && obj.transform.childCount > 0)
+                {
+                    Piece piece = obj.GetComponentInChildren<Piece>();
+                    if (piece.player != player)
+                    {
+                        listSo.Add(piece.soPiece);
+                        listPosition.Add(new Vector2Int(x, y));
+                    }
+
+                }
+            }
+        }
+
+        CheckEatKor(player, listSo, positionKor, listPosition);
+    }
 
     // Create the selected GameObject piece at a specific position on the board.
     public void PlacePiece(Vector2Int position, int player = 1)
@@ -300,7 +304,6 @@ public class BoardManager : MonoBehaviour, IGameManager
         if (POnSursis == null)
         {
             POnSursis = player;
-
         }
     }
 
@@ -345,7 +348,6 @@ public class BoardManager : MonoBehaviour, IGameManager
             {
                 // function is doing the verification of the piece type
                 TransformationKodamaOrWinKoro(selectedPiece, new Vector2Int(row,col), false);
-
             }
         }
 
@@ -366,7 +368,6 @@ public class BoardManager : MonoBehaviour, IGameManager
 
         selectedPiece = null;
         selectedPiecePosition = Vector2Int.zero;
-        //ChangeTurn();
     }
 
     // Removes a the piece at a specific position on the board.
@@ -415,7 +416,8 @@ public class BoardManager : MonoBehaviour, IGameManager
         {
             // got a piece on it
             if (selectedPiece)
-            {
+            { 
+                // IA not supposed to go in
                 if (selectedPiecePosition == clickedPosition && !isParachuting)
                 {
                     selectedPiece = null;
@@ -426,7 +428,10 @@ public class BoardManager : MonoBehaviour, IGameManager
                 
                 if (currentPlayerTurn == player2) MovePiece(clickedPosition, -1);
                 else MovePiece(clickedPosition, 1);
-                ChangeTurn();
+
+                // ChangeTurn(); // logic before, not now with AI
+                // stop the turn of the current player
+                currentPlayerTurn.StopTurn();
             }
             else
             {
@@ -446,8 +451,9 @@ public class BoardManager : MonoBehaviour, IGameManager
         }
     }
 
-    private void ChangeTurn()
+    public void ChangeTurn()
     {
+        // change who is playing
         bool player1IsPlaying;
         if (currentPlayerTurn == player1)
         {
@@ -459,6 +465,8 @@ public class BoardManager : MonoBehaviour, IGameManager
             currentPlayerTurn = player1;
             player1IsPlaying = true;
         }
+
+        // check if koro is about to win by being on the last line
         if (turnLeft == 1)
         {
             if (POnSursis == player1)
@@ -474,11 +482,12 @@ public class BoardManager : MonoBehaviour, IGameManager
         {
             turnLeft++;
         }
-       
-        cemeteryManager.SetCemeteryButtonsInteractability(player1IsPlaying);
-        UpdateTilesAtTurnChange();
+
+        // prepare turn for the player 
+        if (currentPlayerTurn.isAI) cemeteryManager.SetCemeteryButtonsProhibit();
+        else cemeteryManager.SetCemeteryButtonsInteractability(player1IsPlaying);
         
-        LogPieceIds();
+        UpdateTilesAtTurnChange();
     }
 
     private GameObject GetPieceAtPosition(Vector2Int position)
@@ -507,7 +516,7 @@ public class BoardManager : MonoBehaviour, IGameManager
                 GameObject currentCase = boardArray[position.x, position.y];
                 GameObject pieceAtPosition = GetPieceAtPosition(position);
 
-                if (pieceAtPosition != null)
+                if (pieceAtPosition != null && !currentPlayerTurn.isAI)
                 {
                     if (pieceAtPosition.GetComponent<Piece>().player == currentPlayerTurn)
                     {
@@ -522,6 +531,7 @@ public class BoardManager : MonoBehaviour, IGameManager
             }
         }
     }
+
     public void UpdateTilesClickability(List<Vector2Int> possibleMoves = null, bool parachuting = false)
     {
         isParachuting = parachuting;
@@ -562,21 +572,6 @@ public class BoardManager : MonoBehaviour, IGameManager
         }
     }
 
-    public List<IPawn> GetAllPawn()
-    {
-        throw new NotImplementedException();
-    }
-
-    public List<IBoardCase> GetAllBoardCase()
-    {
-        throw new NotImplementedException();
-    }
-
-    public void DoAction(IPawn pawnTarget, Vector2Int position, EActionType actionType)
-    {
-        throw new NotImplementedException();
-    }
-
     private void HandleEatingPiece(Vector2Int newPosition)
     {
         GameObject pieceToEat = GetPieceAtPosition(newPosition);
@@ -599,7 +594,6 @@ public class BoardManager : MonoBehaviour, IGameManager
     private void End(int player)
     {
         isGameEnd = true;
-        Debug.Log(player);
         if (player == 1)
         {
             winnerText.text = player1.name;
@@ -701,10 +695,59 @@ public class BoardManager : MonoBehaviour, IGameManager
             if (playerMoves.ContainsKey(otherPlayerId) && playerMoves[otherPlayerId].Count >= maxMovesUntilDraw)
             {
                 // Draw
-                
                 End(0);
             }
         }
     }
 
+    public List<IPawn> GetAllPawn()
+    {
+        throw new NotImplementedException();
+    }
+
+    public List<IBoardCase> GetAllBoardCase()
+    {
+        List<IBoardCase> allBoardCases = new List<IBoardCase>();
+
+        for (int i = 0; i < numberOfRows; i++)
+        {
+            for (int j = 0; j < numberOfColumns; j++)
+            {
+                BoardCase boardCase = boardArray[i, j].GetComponent<BoardCase>();
+                if (boardCase != null)
+                {
+                    allBoardCases.Add(boardCase);
+                }
+            }
+        }
+         
+        return allBoardCases;
+    }
+
+    public void DoAction(IPawn pawnTarget, Vector2Int position, EActionType actionType)
+    {
+        Vector2Int newPosition = ConvertToYohanArray(position);
+
+        Piece piece = pawnTarget as Piece;
+        if (piece == null)
+        {
+            Debug.LogError("DoAction: Invalid IPawn provided.");
+            return;
+        }
+        selectedPiece = piece.gameObject;
+
+        if (actionType == EActionType.PARACHUTE) isParachuting = true;
+        else isParachuting = false;
+
+        // move function
+        OnCaseClicked(newPosition);
+    }
+
+    public Vector2Int ConvertToYohanArray(Vector2Int position)
+    {
+        int x = position.y;
+        int y = numberOfRows - 1 - position.x;
+        Debug.Log("ConvertToYohanArray = new position x : " + x + " new position y : " + y);
+        return new Vector2Int(x, y);
+    }
 }

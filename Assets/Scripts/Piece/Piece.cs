@@ -9,7 +9,7 @@ public class Piece : MonoBehaviour, IPawn
 {
     public SOPiece soPiece;
     public Player player;
-    // LA faut juste les remplir
+
     public int idPlayer;
     public int idPiece;
 
@@ -36,25 +36,16 @@ public class Piece : MonoBehaviour, IPawn
         Start();
     }
 
-    // has been eaten
-    protected virtual void Defeated()
-    {
-        // throw piece out of the board
-    }
-
     public List<Vector2Int> GetDirections()
     {
-        throw new System.NotImplementedException();
+        MoveManager moveManager = FindObjectOfType<MoveManager>();
+        List<Vector2Int> validMoves = moveManager.GetValidMoves(soPiece, GetCurrentPosition(), player);
+        return validMoves;
     }
 
     public ICompetitor GetCurrentOwner()
     {
         return player;
-    }
-
-    public IBoardCase GetCurrentBoardCase()
-    {
-        throw new System.NotImplementedException();
     }
 
     public EPawnType GetPawnType()
@@ -63,6 +54,11 @@ public class Piece : MonoBehaviour, IPawn
     }
 
     public Vector2Int GetCurrentPosition()
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public IBoardCase GetCurrentBoardCase()
     {
         throw new System.NotImplementedException();
     }

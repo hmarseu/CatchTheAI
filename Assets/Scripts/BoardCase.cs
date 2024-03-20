@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UIElements;
+using YokaiNoMori.Enumeration;
 using YokaiNoMori.Interface;
 
 public class BoardCase : MonoBehaviour, IBoardCase
@@ -118,16 +119,23 @@ public class BoardCase : MonoBehaviour, IBoardCase
 
     public Vector2Int GetPosition()
     {
-        throw new NotImplementedException();
+        return positionInBoard;
     }
 
     public IPawn GetPawnOnIt()
     {
-        throw new NotImplementedException();
+        Transform firstChild = transform.GetChild(0);
+        Piece piece = firstChild.GetComponent<Piece>();
+
+        if (piece != null) return piece;
+        else return null;
     }
 
     public bool IsBusy()
     {
-        throw new NotImplementedException();
+        IPawn pawnOnCase = GetPawnOnIt();
+
+        if (pawnOnCase != null) return true;
+        else return false;
     }
 }
