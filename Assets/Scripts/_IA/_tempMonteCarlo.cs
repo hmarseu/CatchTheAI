@@ -43,8 +43,6 @@ public class Node
 }
 public class _tempMonteCarlo : MonoBehaviour
 {
-  
-
     public SOPiece Kodama;
     public SOPiece KodamaSamourai;
     public SOPiece Kitsune;
@@ -87,6 +85,7 @@ public class _tempMonteCarlo : MonoBehaviour
             BackPropagation(node, result);
         }
         Node bestChild = rootNode.childNodes.OrderByDescending(child => child.visits).FirstOrDefault();
+        Debug.Log($"piece : {bestChild.Piece.name} meilleur coup : {bestChild.move}");
         return bestChild.move;
     }
 
@@ -105,13 +104,39 @@ public class _tempMonteCarlo : MonoBehaviour
         return currentNode;
     }
     /// <summary>
-    /// after the expansion -> it chooses a child node to simulate the game until a certain number of action
+    /// after the expansion -> it chooses a child node to simulate the game
     /// </summary>
     /// <returns></returns>
     private double Simulation(Node node)
     {
-        // we need to simulate a game and return 1 for win and 0 for defeat and -1 for null
-        return 0;
+        int currentPlayer = node.playerid;
+        int[,] currentBoard = (int[,])node.piecesPosition.Clone();
+        while(true)
+        {
+            List<Vector3Int> playerPieces = GetAllPiecesOfPlayer(node);
+            List<Vector2Int> validMoves = new List<Vector2Int>();
+            foreach(Vector3Int piece in playerPieces)
+            {
+                List<Vector2Int> piecesMoves = GetValidMoves(piece, currentPlayer);
+                validMoves.AddRange(piecesMoves);
+            }
+            if(validMoves.Count == 0)
+            {
+                return 0;
+            }
+            Vector2Int randomMove = validMoves[UnityEngine.Random.Range(0, validMoves.Count)];
+
+            int pieceValue = currentBoard[randomMove.x,randomMove.y];
+            currentBoard[randomMove.x,randomMove.y] = currentBoard[pieceValue,randomMove.x];
+            if (IsWinner(currentBoard,currentPlayer))
+            {
+                return 1;
+            }
+            else if (IsDraw(currentBoard))
+            {
+                return 0;
+            }
+        }
     }
     /// <summary>
     /// after selection -> if the node haven t all the solutions it add node 
@@ -126,8 +151,6 @@ public class _tempMonteCarlo : MonoBehaviour
             List<Vector2Int> moves = GetValidMoves(piece, node.playerid);
             foreach(Vector2Int move in moves)
             {
-                
-                
                 Node child = new Node(move, pieceDataDictionnary[piece.z], node, ReplaceInTab(node.piecesPosition,piece.z,move));
                 node.childNodes.Add(child);
                 child.parent = node;
@@ -149,8 +172,6 @@ public class _tempMonteCarlo : MonoBehaviour
             node = node.parent;
         }
     }
-
-
 
     //----------------- complementary funct ----------------------
 
@@ -206,7 +227,7 @@ public class _tempMonteCarlo : MonoBehaviour
     {
         if (boardTab[pos.x, pos.y] != 0)
         {
-           
+           //todo 
         }
         return true;
     }
@@ -250,8 +271,24 @@ public class _tempMonteCarlo : MonoBehaviour
             
         }
         return array1;
+    }
 
-
-
+    public bool IsWinner(int[,] array,int playerid )
+    {
+        for (int i = 0; i < array.GetLength(0); i++)
+        {
+            for (int k = 0; k < array.GetLength(1); k++)
+            {
+                if (array[i,k] == 10*playerid)
+                {
+                    return true;
+                }           
+            }
+        }
+        return false;
+    }
+    public bool IsDraw(int[,] array)
+    {
+        return false;
     }
 }
