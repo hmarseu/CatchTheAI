@@ -57,7 +57,7 @@ public class BoardManager : MonoBehaviour, IGameManager
     public delegate void checkCanEatKoropokkuru(Player player, List<SOPiece> listPion, Vector2Int positionKor, List<Vector2Int> listPosition);
     public static event checkCanEatKoropokkuru CheckEatKor;
 
-    private int[,] GetBoardWithIds()
+    public int[,] GetBoardWithIds()
     {
         return pieceIds;
     }
