@@ -750,4 +750,14 @@ public class BoardManager : MonoBehaviour, IGameManager
         Debug.Log("ConvertToYohanArray = new position x : " + x + " new position y : " + y);
         return new Vector2Int(x, y);
     }
+
+    public List<IPawn> GetReservePawnsByPlayer(ECampType campType)
+    {
+        throw new NotImplementedException();
+    }
+
+    public List<IPawn> GetPawnsOnBoard(ECampType campType)
+    {
+        throw new NotImplementedException();
+    }
 }

@@ -36,6 +36,11 @@ public class Player : MonoBehaviour, ICompetitor
         this.myCamp = camp;
     }
 
+    public void Init(IGameManager igameManager, float timerForAI)
+    {
+        throw new System.NotImplementedException();
+    }
+
     public void StartTurn()
     {
         // if the player is an IA
@@ -65,8 +70,9 @@ public class Player : MonoBehaviour, ICompetitor
         StartTurn();
     }
 
-    public void Init(IGameManager igameManager, float timerForAI)
+    public void GetDatas()
     {
         throw new System.NotImplementedException();
     }
+
 }
