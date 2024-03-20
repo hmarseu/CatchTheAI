@@ -5,7 +5,7 @@ using UnityEngine;
 using YokaiNoMori.Enumeration;
 using YokaiNoMori.Interface;
 
-public class Piece : MonoBehaviour,IPawn
+public class Piece : MonoBehaviour, IPawn
 {
     public SOPiece soPiece;
     public Player player;
@@ -60,5 +60,10 @@ public class Piece : MonoBehaviour,IPawn
     public EPawnType GetPawnType()
     {
         return soPiece.ePawnType;
+    }
+
+    public Vector2Int GetCurrentPosition()
+    {
+        throw new System.NotImplementedException();
     }
 }

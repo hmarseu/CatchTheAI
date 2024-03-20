@@ -14,7 +14,7 @@ using YokaiNoMori.Enumeration;
 using YokaiNoMori.Interface;
 
 public class BoardManager : MonoBehaviour, IGameManager
-{// LA
+{
     private int[,] pieceIds; // Array with all the position and the id of the pieces on the board
 
     int turnLeft = 0;
@@ -78,7 +78,7 @@ public class BoardManager : MonoBehaviour, IGameManager
                     }
                     else
                     {
-                        // LA
+                        
                         boardArray[i, j].transform.GetChild(0).GetComponent<Piece>().player = player2;
                         boardArray[i, j].transform.GetChild(0).GetComponent<Piece>().idPlayer = -1;
                     }
@@ -163,7 +163,7 @@ public class BoardManager : MonoBehaviour, IGameManager
         PlacePiece(new Vector2Int(0, 0), 1);
         selectedPiece = pionDictionary[3];
         PlacePiece(new Vector2Int(1, 1), 1);
-        // LA
+        
         // player 2
         selectedPiece = pionDictionary[0];
         PlacePiece(new Vector2Int(3, 0), -1);
@@ -238,7 +238,7 @@ public class BoardManager : MonoBehaviour, IGameManager
             }
         }
     }
-    // LA
+    
     // debug
     public void LogPieceIds()
     {
@@ -276,7 +276,7 @@ public class BoardManager : MonoBehaviour, IGameManager
         int row = position.x;
         int col = position.y;
 
-        // LA
+        
         int playerId = (player == 1) ? 1 : -1;
         pieceIds[row, col] = playerId * selectedPiece.GetComponent<Piece>().idPiece;
 
@@ -340,7 +340,7 @@ public class BoardManager : MonoBehaviour, IGameManager
         {
             // previous position is now empty
             pieceIds[selectedPiecePosition.x, selectedPiecePosition.y] = 0;
-            // LA
+            
             if ((row == 0 && player == -1)|| row == 3 && player == 1)
             {
                 // function is doing the verification of the piece type
@@ -423,7 +423,7 @@ public class BoardManager : MonoBehaviour, IGameManager
                     UpdateTilesAtTurnChange();
                     return;
                 }
-                // LA
+                
                 if (currentPlayerTurn == player2) MovePiece(clickedPosition, -1);
                 else MovePiece(clickedPosition, 1);
                 ChangeTurn();
@@ -466,7 +466,7 @@ public class BoardManager : MonoBehaviour, IGameManager
                 End(1);
             }
             else
-            {// LA
+            {
                 End(-1);
             }
         }
@@ -477,7 +477,7 @@ public class BoardManager : MonoBehaviour, IGameManager
        
         cemeteryManager.SetCemeteryButtonsInteractability(player1IsPlaying);
         UpdateTilesAtTurnChange();
-        // LA
+        
         LogPieceIds();
     }
 
@@ -603,7 +603,7 @@ public class BoardManager : MonoBehaviour, IGameManager
         if (player == 1)
         {
             winnerText.text = player1.name;
-        }// LA
+        }
         else if (player == -1)
         {
             winnerText.text = player2.name;
@@ -625,7 +625,7 @@ public class BoardManager : MonoBehaviour, IGameManager
     {
         Piece pieceComponent = piece.GetComponent<Piece>();
         if (pieceComponent != null)
-        {// LA
+        {
             // change the team of the piece
             pieceComponent.player = currentPlayerTurn;
             pieceComponent.idPlayer = (short)(currentPlayerTurn == player1 ? 1 : -1);
@@ -694,14 +694,14 @@ public class BoardManager : MonoBehaviour, IGameManager
 
         // Does one of the players have 6 moves registered
         if (moves.Count >= maxMovesUntilDraw)
-        {// LA
+        {
             int otherPlayerId = playerId == 1 ? -1 : 1;
 
             // Check if both player did 6 same moves
             if (playerMoves.ContainsKey(otherPlayerId) && playerMoves[otherPlayerId].Count >= maxMovesUntilDraw)
             {
                 // Draw
-                // LA
+                
                 End(0);
             }
         }

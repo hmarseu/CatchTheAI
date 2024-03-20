@@ -1,10 +1,17 @@
+using System;
 using YokaiNoMori.Enumeration;
 
 namespace YokaiNoMori.Interface
 {
-
     public interface ICompetitor
     {
+        /// <summary>
+        /// Called by the GameManager for init competitor and get the GameManager (for AI)
+        /// </summary>
+        /// <param name="igameManager"></param>
+        public void Init(IGameManager igameManager, float timerForAI);
+
+
         /// <summary>
         /// Used by my UI
         /// </summary>

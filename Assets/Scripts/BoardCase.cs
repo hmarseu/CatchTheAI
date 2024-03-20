@@ -5,8 +5,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UIElements;
+using YokaiNoMori.Interface;
 
-public class BoardCase : MonoBehaviour
+public class BoardCase : MonoBehaviour, IBoardCase
 {
     [SerializeField] private bool _isClickable = false;
     private VFX_Manager _vfxManager;
@@ -65,12 +66,12 @@ public class BoardCase : MonoBehaviour
 
     public void MovePiece(GameObject piece, float rotationZ = 0f)
     {
-        // Changer le parent de la pièce pour la placer dans la case
+        // change the parent of the piece
         piece.transform.SetParent(transform);
         PlayFX();
         piece.transform.rotation = Quaternion.Euler(0f, 0f, rotationZ);
-        piece.transform.localPosition = Vector3.zero; // Réinitialiser la position locale
-        piece.name = piece.name; // Optionnel : Mettre à jour le nom de l'objet
+        piece.transform.localPosition = Vector3.zero;
+        piece.name = piece.name;
     }
 
     public void InstantiatePiece(GameObject piece, float rotationZ = 0f)
@@ -113,5 +114,20 @@ public class BoardCase : MonoBehaviour
     {
         _vfxManager?.PlayAtIndex(4, this.transform.position);
         _sfxManager?.PlaySoundEffect(1);
+    }
+
+    public Vector2Int GetPosition()
+    {
+        throw new NotImplementedException();
+    }
+
+    public IPawn GetPawnOnIt()
+    {
+        throw new NotImplementedException();
+    }
+
+    public bool IsBusy()
+    {
+        throw new NotImplementedException();
     }
 }

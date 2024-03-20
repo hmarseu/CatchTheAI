@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using YokaiNoMori.Enumeration;
@@ -27,6 +28,5 @@ namespace YokaiNoMori.Interface
         /// <param name="position">The position, in Vector2Int, targeted</param>
         /// <param name="actionType">Type of action performed</param>
         public void DoAction(IPawn pawnTarget, Vector2Int position, EActionType actionType);
-
     }
 }

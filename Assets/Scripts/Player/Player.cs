@@ -40,4 +40,14 @@ public class Player : MonoBehaviour, ICompetitor
         //donc tout va devoir se passer par la sur comment on termine le tour
         throw new System.NotImplementedException();
     }
+
+    public void Init(IGameManager igameManager)
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public void Init(IGameManager igameManager, float timerForAI)
+    {
+        throw new System.NotImplementedException();
+    }
 }
