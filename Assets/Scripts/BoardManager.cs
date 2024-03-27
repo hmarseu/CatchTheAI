@@ -396,9 +396,9 @@ public class BoardManager : MonoBehaviour, IGameManager
         piece.SetCurrentPosition(new Vector2Int (row, col));
 
 
-        Debug.LogError("MOVE");
-        LogPieceIds();
-        Debug.LogError("END MOVE");
+        //Debug.LogError("MOVE");
+        //LogPieceIds();
+        //Debug.LogError("END MOVE");
 
         selectedPiece = null;
         selectedPiecePosition = Vector2Int.zero;
@@ -829,9 +829,9 @@ public class BoardManager : MonoBehaviour, IGameManager
             if (actionType == EActionType.PARACHUTE) isParachuting = true;
             else
             {
-                Debug.LogWarning("START SHOW POSITION");
-                LogPiecePositions();
-                Debug.LogWarning("END SHOW POSITION");
+                //Debug.LogWarning("START SHOW POSITION");
+                //LogPiecePositions();
+                //Debug.LogWarning("END SHOW POSITION");
 
                 selectedPiecePosition = piece.GetCurrentPosition();
                 isParachuting = false;

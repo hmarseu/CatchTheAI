@@ -49,7 +49,7 @@ public class Player : MonoBehaviour, ICompetitor
         // if the player is an IA
         if (isAI)
         {
-            Vector3Int bestMove = ia.MonteCarloSearch(new Node(idPlayer, new Vector2Int(), 0, null, boardManager.GetBoardWithIds()), 500);
+            Vector3Int bestMove = ia.MonteCarloSearch(new Node(idPlayer, new Vector2Int(), 0, null, boardManager.GetBoardWithIds()), 1000);
             //Debug.Log($"pieceid + position : {bestMove} ");
 
             // get a selectedPiece to play
@@ -75,8 +75,8 @@ public class Player : MonoBehaviour, ICompetitor
 
     public void StopTurn()
     {
-        boardManager.LogPieceIds();
-        Debug.LogWarning("_________");
+        //boardManager.LogPieceIds();
+        //Debug.LogWarning("_________");
         boardManager.ChangeTurn();
         //StartTurn();
     }

@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
@@ -86,18 +86,7 @@ public class _tempMonteCarlo : MonoBehaviour
     {
         if (boardManager != null)
         {
-
             boardTab = (int[,])boardManager.GetBoardWithIds().Clone();
-
-            /*
-                 for (int i = 0; i < boardTab.GetLength(0); i++)
-                 {
-                     for (int j = 0; j < boardTab.GetLength(1); j++)
-                     {
-                         Debug.Log($"tableau[{i},{j}] = {boardTab[i, j]}");
-                     }
-                 }
-            */
             for (int i = 0; i < visits; i++)
             {
                 Node node = Selection(rootNode);
@@ -106,27 +95,44 @@ public class _tempMonteCarlo : MonoBehaviour
                 BackPropagation(node, result);
             }
 
-            //Node bestChild = rootNode.childNodes.OrderByDescending(child => child.visits).FirstOrDefault();
-            Node bestChild = null;
-            int maxVisits = int.MinValue;
+            Node bestChild = GetBestChild(rootNode);
 
-            foreach (Node child in rootNode.childNodes)
-            {
-                if (child.visits > maxVisits)
-                {
-                    maxVisits = child.visits;
-                    bestChild = child;
-                }
-            }
-
-            Debug.Log($"piece : {bestChild.Piece} meilleur coup : {bestChild.move} ");
-            
             if (bestChild != null)
             {
-                return new Vector3Int(bestChild.move.x,bestChild.move.y,bestChild.Piece);
+                Debug.Log($"Meilleur coup trouvï¿½ - Piï¿½ce : {bestChild.Piece}, Position : {bestChild.move}, Score : {bestChild.wins}");
+                return new Vector3Int(bestChild.move.x, bestChild.move.y, bestChild.Piece);
+            }
+            else
+            {
+                Debug.Log("Aucun meilleur coup trouvï¿½.");
             }
         }
         return new Vector3Int();
+    }
+
+    private Node GetBestChild(Node node)
+    {
+        Node bestChild = null;
+        double maxScore = double.MinValue;
+
+        foreach (Node child in node.childNodes)
+        {
+            // Vous pouvez ï¿½galement choisir le meilleur enfant en utilisant la valeur UCB ici
+            double ucbValue = child.ScoreValue();
+            if (ucbValue > maxScore)
+            {
+                maxScore = ucbValue;
+                bestChild = child;
+            }
+
+            //if (child.wins > maxScore)
+            //{
+            //    maxScore = child.wins;
+            //    bestChild = child;
+            //}
+        }
+
+        return bestChild;
     }
 
 
@@ -141,16 +147,18 @@ public class _tempMonteCarlo : MonoBehaviour
         {
             //currentNode = currentNode.childNodes.OrderByDescending(child =>child.ScoreValue()).First();
             double maxScoreValue = double.MinValue;
-
+            Node selectedChild = null;
             foreach (Node child in currentNode.childNodes)
             {
                 double scoreValue = child.ScoreValue();
                 if (scoreValue > maxScoreValue)
                 {
                     maxScoreValue = scoreValue;
-                    currentNode = child;
+                    selectedChild = child;
                 }
             }
+
+            currentNode = selectedChild;
         }
         return currentNode;
     }
@@ -162,41 +170,58 @@ public class _tempMonteCarlo : MonoBehaviour
     /// <returns></returns>
     private double Simulation(Node node)
     {
-        int indexTest=0;
+        double score = 0;
+        int maxIterations = 100; // Dï¿½finir le nombre maximum d'itï¿½rations
+        int currentIteration = 0;
 
         int currentPlayer = node.playerid;
         int[,] currentBoard = (int[,])node.piecesPosition.Clone();
-        while(indexTest <1000)
+
+        while (currentIteration < maxIterations)
         {
+            currentIteration++;
             List<Vector3Int> playerPieces = GetAllPiecesOfPlayer(node);
-            List<Vector2Int> validMoves = new List<Vector2Int>();
-            foreach(Vector3Int piece in playerPieces)
+            List<Vector3Int> validMoves = new List<Vector3Int>();
+
+            foreach (Vector3Int piece in playerPieces)
             {
-                List<Vector2Int> piecesMoves = GetValidMoves(piece, currentPlayer);
+                List<Vector3Int> piecesMoves = GetValidMoves(piece, currentPlayer);
                 validMoves.AddRange(piecesMoves);
             }
-            if(validMoves.Count == 0)
+
+            if (validMoves.Count == 0)
             {
-                return 0;
+                return 0; // La partie est terminï¿½e, aucun joueur n'a gagnï¿½
             }
-            Vector2Int randomMove = validMoves[UnityEngine.Random.Range(0, validMoves.Count-1)];
-            
-            int pieceValue = currentBoard[randomMove.x,randomMove.y];
-            currentBoard = ReplaceInTab(currentBoard, pieceValue, randomMove);
-            //currentBoard[randomMove.x,randomMove.y] = currentBoard[pieceValue,randomMove.x];
-            
-            if (IsWinner(currentBoard,currentPlayer))
+
+            Vector3Int randomMove = validMoves[UnityEngine.Random.Range(0, validMoves.Count - 1)];
+
+            currentBoard = ReplaceInTab(currentBoard, randomMove.z, new Vector2Int(randomMove.x, randomMove.y));
+
+            if (IsWinner(currentBoard, currentPlayer))
             {
-                return 1;
+                score = double.MaxValue; // Le joueur actuel a gagnï¿½, attribuer un score ï¿½levï¿½
+                break; // Sortir de la boucle puisqu'on a un vainqueur
             }
-            else if (IsDraw(currentBoard))
+
+            if (korSafe(currentBoard, currentPlayer))
             {
-                return 0;
+                score += 5000;
             }
-            //Debug.Log(indexTest);
-            indexTest++;   
+            else
+            {
+                score -= 5000000;
+            }
+
+            // Condition de sortie basï¿½e sur le rï¿½sultat de la simulation (le joueur adverse a gagnï¿½)
+            if (IsWinner(currentBoard, -currentPlayer))
+            {
+                score = double.MinValue; // Le joueur adverse a gagnï¿½, attribuer un score trï¿½s bas
+                break; // Sortir de la boucle
+            }
         }
-        return 0;
+
+        return score;
     }
     /// <summary>
     /// after selection -> if the node haven t all the solutions it add node 
@@ -209,7 +234,7 @@ public class _tempMonteCarlo : MonoBehaviour
         
         foreach (Vector3Int piece in posidpiece)
         {
-            List<Vector2Int> moves = GetValidMoves(piece, node.playerid);
+            List<Vector3Int> moves = GetValidMoves(piece, node.playerid);
             //Debug.Log($"id joueur: {node.playerid}");
             foreach(Vector2Int move in moves)
             {
@@ -239,11 +264,48 @@ public class _tempMonteCarlo : MonoBehaviour
     }
 
     //----------------- complementary funct ----------------------
+    public bool korSafe(int[,] array, int playerid)
+    {
+        Vector2Int korPosition = new Vector2Int();
+        int width = array.GetLength(0);
+        int height = array.GetLength(1);
+        for (int i = 0; i < width; i++)
+        {
+            for (int k = 0; k < height; k++)
+            {
+                if (array[i, k] == 10 * playerid)
+                {
+                    korPosition = new Vector2Int(i, k);
+                }
 
-    private List<Vector2Int> GetValidMoves(Vector3Int posplusidpiece, int player)
+            }
+        }
+
+        bool otherThanKor = false;
+
+        // verificate if the king is in danger 
+        for (int i = Math.Max(0, korPosition.x - 1); i <= Math.Min(korPosition.x + 1, width - 1); i++)
+        {
+            for (int j = Math.Max(0, korPosition.y - 1); j <= Math.Min(korPosition.y + 1, height - 1); j++)
+            {
+                if (i != korPosition.x || j != korPosition.y)
+                {
+                    if (array[i, j] != 0 && Math.Sign(array[i, j]) != Math.Sign(playerid))
+                    {
+                        otherThanKor = true;
+                        break;
+                    }
+                }
+            }
+            if (otherThanKor) break;
+        }
+
+        return otherThanKor;
+    }
+    private List<Vector3Int> GetValidMoves(Vector3Int posplusidpiece, int player)
     {
         SOPiece so = pieceDataDictionnary[posplusidpiece.z];
-        List<Vector2Int> validMoves = new List<Vector2Int>();
+        List<Vector3Int> validMoves = new List<Vector3Int>();
         int[] deltaX;
         int[] deltaY;
 
@@ -268,7 +330,7 @@ public class _tempMonteCarlo : MonoBehaviour
                 int newY = posplusidpiece.y + deltaY[i];
                 if (IsInsideBoard(newX, newY) && IsReachable(new Vector2Int(newX, newY), player))
                 {
-                    validMoves.Add(new Vector2Int(newX, newY));
+                    validMoves.Add(new Vector3Int(newX, newY, posplusidpiece.z));
                 }
             }
         }
@@ -306,7 +368,7 @@ public class _tempMonteCarlo : MonoBehaviour
                 return true;
             }
         }
-        return false;
+        return true;
     }
     private List<Vector3Int> GetAllPiecesOfPlayer(Node node)
     {
@@ -338,7 +400,7 @@ public class _tempMonteCarlo : MonoBehaviour
             {
                 if (array1[i, j] == value)
                 {
-                    // La pièce avec la valeur spécifiée a été trouvée
+                    // La piÃ¨ce avec la valeur spÃ©cifiÃ©e a Ã©tÃ© trouvÃ©e
                     pos=  new Vector2Int (i, j );
                     array1[i, j] = 0;
                     array1[newposition.x,newposition.y] = value;
@@ -351,19 +413,32 @@ public class _tempMonteCarlo : MonoBehaviour
         return array1;
     }
 
-    public bool IsWinner(int[,] array,int playerid )
+    public bool IsWinner(int[,] array, int playerid)
     {
+        bool stillourkor = true;
+        bool stillotherkor = true;
         for (int i = 0; i < array.GetLength(0); i++)
         {
             for (int k = 0; k < array.GetLength(1); k++)
             {
-                if (array[i,k] == 10*playerid)
+                if (array[i, k] == 10 * playerid)
                 {
-                    return true;
-                }           
+                    stillourkor = true;
+                }
+                else if (array[i, k] == 10 * playerid * -1)
+                {
+                    stillotherkor = true;
+                }
             }
         }
-        return false;
+        if (stillourkor && !stillotherkor)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
     public bool IsDraw(int[,] array)
     {
