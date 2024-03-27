@@ -762,7 +762,7 @@ public class BoardManager : MonoBehaviour, IGameManager
     public Vector2Int ConvertToYohanArray(Vector2Int position)
     {
         int x = position.y;
-        int y = numberOfRows - 1 - position.x;
+        int y = position.x;
         //Debug.Log("ConvertToYohanArray = new position x : " + x + " new position y : " + y);
         return new Vector2Int(x, y);
     }
