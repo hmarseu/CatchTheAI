@@ -62,6 +62,8 @@ public class BoardManager : MonoBehaviour, IGameManager
         currentPlayerTurn = player1;
         GenerateBoard();
         StartFillArray();
+        SetPiecePositions(); // give to the pieces their position
+        // LogPiecePositions();
         CreationOfPlayer();
         // LogBoardArray();
         // LogPieceIds();
@@ -145,6 +147,32 @@ public class BoardManager : MonoBehaviour, IGameManager
         selectedPiece = pionDictionary[3];
         PlacePiece(new Vector2Int(2, 1), -1);
     }
+
+    public void SetPiecePositions()
+    {
+        if (boardArray == null)
+        {
+            Debug.LogWarning("The board array is null.");
+            return;
+        }
+
+        int numRows = numberOfRows;
+        int numCols = numberOfColumns;
+
+        for (int i = 0; i < numRows; i++)
+        {
+            for (int j = 0; j < numCols; j++)
+            {
+                GameObject pieceObject = GetPieceObjectAtPosition(new Vector2Int(i, j));
+                if (pieceObject != null)
+                {
+                    Piece piece = pieceObject.GetComponent<Piece>();
+                    piece.SetCurrentPosition(new Vector2Int(i, j));
+                }
+            }
+        }
+    }
+
     private void GenerateBoard()
     {
         _sfxManager?.PlaySoundEffect(0);
@@ -238,32 +266,6 @@ public class BoardManager : MonoBehaviour, IGameManager
         }
     }
 
-    public void LogArray(int[,] table)
-    {
-        if (table == null)
-        {
-            Debug.LogWarning("The pieceIds array is null.");
-            return;
-        }
-
-        int numRows = table.GetLength(0);
-        int numCols = table.GetLength(1);
-
-        for (int i = numRows - 1; i >= 0; i--)
-        {
-            string rowContent = "";
-            for (int j = 0; j < numCols; j++)
-            {
-                rowContent += table[i, j].ToString();
-
-                if (j < numCols - 1)
-                {
-                    rowContent += ", ";
-                }
-            }
-            Debug.Log(rowContent);
-        }
-    }
 
     private void PromotionZoneKoropokkuru(Vector2Int positionKor, Player player)
     {
@@ -312,9 +314,6 @@ public class BoardManager : MonoBehaviour, IGameManager
         // instantiate the selected piece on the new case
         if (player != 1) boardArray[row, col].GetComponent<BoardCase>().InstantiatePiece(selectedPiece, 180f);
         else boardArray[row, col].GetComponent<BoardCase>().InstantiatePiece(selectedPiece);
-
-        // give the piece its position
-        selectedPiece.GetComponent<Piece>().SetCurrentPosition(position);
 
         selectedPiece = null;
         selectedPiecePosition = Vector2Int.zero;
@@ -764,6 +763,53 @@ public class BoardManager : MonoBehaviour, IGameManager
         return allBoardCases;
     }
 
+    private GameObject GetPieceObjectAtPosition(Vector2Int position)
+    {
+        GameObject boardCase = boardArray[position.x, position.y];
+        if (boardCase != null && boardCase.transform.childCount > 0)
+        {
+            return boardCase.transform.GetChild(0).gameObject;
+        }
+        return null;
+    }
+
+    public void LogPiecePositions()
+    {
+        if (boardArray == null)
+        {
+            Debug.LogWarning("The board array is null.");
+            return;
+        }
+
+        int numRows = numberOfRows;
+        int numCols = numberOfColumns;
+
+        for (int i = numRows - 1; i >= 0; i--)
+        {
+            string rowContent = "";
+            for (int j = 0; j < numCols; j++)
+            {
+                GameObject pieceObject = GetPieceObjectAtPosition(new Vector2Int(i, j));
+                if (pieceObject != null)
+                {
+                    Piece piece = pieceObject.GetComponent<Piece>();
+                    Vector2Int position = piece.GetCurrentPosition();
+                    rowContent += "(" + position.x + ", " + position.y + ")";
+                }
+                else
+                {
+                    rowContent += "Empty";
+                }
+
+                if (j < numCols - 1)
+                {
+                    rowContent += ", ";
+                }
+            }
+            Debug.Log(rowContent);
+        }
+    }
+
     public void DoAction(IPawn pawnTarget, Vector2Int position, EActionType actionType)
     {
         
@@ -783,8 +829,11 @@ public class BoardManager : MonoBehaviour, IGameManager
             if (actionType == EActionType.PARACHUTE) isParachuting = true;
             else
             {
+                Debug.LogWarning("START SHOW POSITION");
+                LogPiecePositions();
+                Debug.LogWarning("END SHOW POSITION");
+
                 selectedPiecePosition = piece.GetCurrentPosition();
-                Debug.LogWarning("previous position : " + selectedPiecePosition);
                 isParachuting = false;
             }
 
@@ -803,7 +852,6 @@ public class BoardManager : MonoBehaviour, IGameManager
     {
         int x = position.y;
         int y = position.x;
-        Debug.Log("ConvertToYohanArray = new position x : " + x + " new position y : " + y);
         return new Vector2Int(x, y);
     }
 
@@ -826,9 +874,9 @@ public class BoardManager : MonoBehaviour, IGameManager
                 
                 if (id == pieceIds[i, k])
                 {
-                    Debug.Log($"id : {id} id dans le tableau {pieceIds[i, k]}");
+                    // Debug.Log($"id : {id} id dans le tableau {pieceIds[i, k]}");
                     IPawn piece = boardArray[i, k].transform.GetChild(0).GetComponent<IPawn>();
-                    Debug.Log(piece + " " + i + " " + k);
+                    // Debug.Log(piece + " " + i + " " + k);
                     return piece;
                 }
             }
