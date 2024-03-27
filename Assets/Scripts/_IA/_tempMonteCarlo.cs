@@ -76,55 +76,57 @@ public class _tempMonteCarlo : MonoBehaviour
 
 
 
-        /// <summary>
-        /// will turn the number of time we decide to make more precise moves
-        /// </summary>
-        /// <param name="rootNode"></param>
-        /// <param name="visits"></param>
-        /// <returns></returns>
-        public Vector3Int MonteCarloSearch(Node rootNode,int visits)
+    /// <summary>
+    /// will turn the number of time we decide to make more precise moves
+    /// </summary>
+    /// <param name="rootNode"></param>
+    /// <param name="visits"></param>
+    /// <returns></returns>
+    public Vector3Int MonteCarloSearch(Node rootNode,int visits)
+    {
+        if (boardManager != null)
         {
-            if (boardManager != null)
-            {
 
             boardTab = (int[,])boardManager.GetBoardWithIds().Clone();
-            for (int i = 0; i < boardTab.GetLength(0); i++)
+
+            /*
+                 for (int i = 0; i < boardTab.GetLength(0); i++)
+                 {
+                     for (int j = 0; j < boardTab.GetLength(1); j++)
+                     {
+                         Debug.Log($"tableau[{i},{j}] = {boardTab[i, j]}");
+                     }
+                 }
+            */
+            for (int i = 0; i < visits; i++)
             {
-                for (int j = 0; j < boardTab.GetLength(1); j++)
+                Node node = Selection(rootNode);
+                Expansion(node);
+                double result = Simulation(node);
+                BackPropagation(node, result);
+            }
+
+            //Node bestChild = rootNode.childNodes.OrderByDescending(child => child.visits).FirstOrDefault();
+            Node bestChild = null;
+            int maxVisits = int.MinValue;
+
+            foreach (Node child in rootNode.childNodes)
+            {
+                if (child.visits > maxVisits)
                 {
-                    Debug.Log($"tableau[{i},{j}] = {boardTab[i, j]}");
+                    maxVisits = child.visits;
+                    bestChild = child;
                 }
             }
-            for (int i = 0; i < visits; i++)
-                {
-                    Node node = Selection(rootNode);
-                    Expansion(node);
-                    double result = Simulation(node);
-                    BackPropagation(node, result);
-                }
-                //Node bestChild = rootNode.childNodes.OrderByDescending(child => child.visits).FirstOrDefault();
-                Node bestChild = null;
-                int maxVisits = int.MinValue;
 
-                foreach (Node child in rootNode.childNodes)
-                {
-                    if (child.visits > maxVisits)
-                    {
-                        maxVisits = child.visits;
-                        bestChild = child;
-                    }
-                }
             Debug.Log($"piece : {bestChild.Piece} meilleur coup : {bestChild.move} ");
             
             if (bestChild != null)
             {
-               
-
                 return new Vector3Int(bestChild.move.x,bestChild.move.y,bestChild.Piece);
             }
-            }
-            return new Vector3Int();
-        
+        }
+        return new Vector3Int();
     }
 
 

@@ -13,6 +13,8 @@ public class Piece : MonoBehaviour, IPawn
     public int idPlayer;
     public int idPiece;
 
+    private Vector2Int currentPosition;
+
     private void Start()
     {
         if (soPiece != null && soPiece.Image != null)
@@ -36,6 +38,7 @@ public class Piece : MonoBehaviour, IPawn
         Start();
     }
 
+    // NOT WORKING
     public List<Vector2Int> GetDirections()
     {
         MoveManager moveManager = FindObjectOfType<MoveManager>();
@@ -53,9 +56,14 @@ public class Piece : MonoBehaviour, IPawn
         return soPiece.ePawnType;
     }
 
+    public void SetCurrentPosition(Vector2Int newPosition)
+    {
+        currentPosition = newPosition;
+    }
+
     public Vector2Int GetCurrentPosition()
     {
-        throw new System.NotImplementedException();
+        return currentPosition; ;
     }
 
     public IBoardCase GetCurrentBoardCase()

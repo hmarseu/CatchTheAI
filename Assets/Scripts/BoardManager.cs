@@ -238,6 +238,33 @@ public class BoardManager : MonoBehaviour, IGameManager
         }
     }
 
+    public void LogArray(int[,] table)
+    {
+        if (table == null)
+        {
+            Debug.LogWarning("The pieceIds array is null.");
+            return;
+        }
+
+        int numRows = table.GetLength(0);
+        int numCols = table.GetLength(1);
+
+        for (int i = numRows - 1; i >= 0; i--)
+        {
+            string rowContent = "";
+            for (int j = 0; j < numCols; j++)
+            {
+                rowContent += table[i, j].ToString();
+
+                if (j < numCols - 1)
+                {
+                    rowContent += ", ";
+                }
+            }
+            Debug.Log(rowContent);
+        }
+    }
+
     private void PromotionZoneKoropokkuru(Vector2Int positionKor, Player player)
     {
         // check if the pieces can eat the king
@@ -278,7 +305,6 @@ public class BoardManager : MonoBehaviour, IGameManager
     {
         int row = position.x;
         int col = position.y;
-
         
         int playerId = (player == 1) ? 1 : -1;
         pieceIds[row, col] = playerId * selectedPiece.GetComponent<Piece>().idPiece;
@@ -286,6 +312,9 @@ public class BoardManager : MonoBehaviour, IGameManager
         // instantiate the selected piece on the new case
         if (player != 1) boardArray[row, col].GetComponent<BoardCase>().InstantiatePiece(selectedPiece, 180f);
         else boardArray[row, col].GetComponent<BoardCase>().InstantiatePiece(selectedPiece);
+
+        // give the piece its position
+        selectedPiece.GetComponent<Piece>().SetCurrentPosition(position);
 
         selectedPiece = null;
         selectedPiecePosition = Vector2Int.zero;
@@ -364,6 +393,13 @@ public class BoardManager : MonoBehaviour, IGameManager
         Piece piece = selectedPiece.GetComponent<Piece>();
         pieceIds[row, col] = piece.idPlayer * piece.idPiece;
 
+        // give the piece its position
+        piece.SetCurrentPosition(new Vector2Int (row, col));
+
+
+        Debug.LogError("MOVE");
+        LogPieceIds();
+        Debug.LogError("END MOVE");
 
         selectedPiece = null;
         selectedPiecePosition = Vector2Int.zero;
@@ -730,14 +766,13 @@ public class BoardManager : MonoBehaviour, IGameManager
 
     public void DoAction(IPawn pawnTarget, Vector2Int position, EActionType actionType)
     {
-        Debug.Log($"piece : {pawnTarget} direction : {position}, type : {actionType}");
+        
         Vector2Int newPosition = ConvertToYohanArray(position);
-        Debug.Log($"piece : {pawnTarget} direction apres conversion: {newPosition}, type : {actionType}");
-        // ça crash encore 
+
         if (pawnTarget is Piece)
         {
             Piece piece = (Piece)pawnTarget;
-            //Debug.Log(piece);
+
             if (piece == null)
             {
                 Debug.LogError("DoAction: Invalid IPawn provided.");
@@ -746,10 +781,15 @@ public class BoardManager : MonoBehaviour, IGameManager
             selectedPiece = piece.gameObject;
 
             if (actionType == EActionType.PARACHUTE) isParachuting = true;
-            else isParachuting = false;
+            else
+            {
+                selectedPiecePosition = piece.GetCurrentPosition();
+                Debug.LogWarning("previous position : " + selectedPiecePosition);
+                isParachuting = false;
+            }
 
             //move function
-            OnCaseClicked(newPosition);
+            OnCaseClicked(ConvertToYohanArray(newPosition));
         }
         else
         {
@@ -763,7 +803,7 @@ public class BoardManager : MonoBehaviour, IGameManager
     {
         int x = position.y;
         int y = position.x;
-        //Debug.Log("ConvertToYohanArray = new position x : " + x + " new position y : " + y);
+        Debug.Log("ConvertToYohanArray = new position x : " + x + " new position y : " + y);
         return new Vector2Int(x, y);
     }
 
@@ -779,7 +819,6 @@ public class BoardManager : MonoBehaviour, IGameManager
 
     public IPawn GetPieceById(int id)
     {
-        LogPieceIds();
         for (int i = 0; i < pieceIds.GetLength(0); i++)
         {
             for (int k = 0; k < pieceIds.GetLength(1); k++)

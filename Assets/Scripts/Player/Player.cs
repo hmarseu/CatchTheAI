@@ -75,6 +75,8 @@ public class Player : MonoBehaviour, ICompetitor
 
     public void StopTurn()
     {
+        boardManager.LogPieceIds();
+        Debug.LogWarning("_________");
         boardManager.ChangeTurn();
         //StartTurn();
     }
