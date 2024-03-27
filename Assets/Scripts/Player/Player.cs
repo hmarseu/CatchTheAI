@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UIElements;
 using YokaiNoMori.Enumeration;
 using YokaiNoMori.Interface;
 
@@ -49,8 +50,8 @@ public class Player : MonoBehaviour, ICompetitor
         if (isAI)
         {
             Vector3Int bestMove = ia.MonteCarloSearch(new Node(idPlayer, new Vector2Int(), 0, null, boardManager.GetBoardWithIds()), 500);
-            
-            
+            //Debug.Log($"pieceid + position : {bestMove} ");
+
             // get a selectedPiece to play
             IPawn pawnTarget = boardManager.GetPieceById(bestMove.z);
 
@@ -59,6 +60,9 @@ public class Player : MonoBehaviour, ICompetitor
 
             // get selected action type
             EActionType actionType = EActionType.MOVE;
+
+            //Debug.Log($"piece : {pawnTarget} direction : {newPosition}, type : {actionType}");
+
             // do action
             boardManager.DoAction(pawnTarget, newPosition, actionType);
             

@@ -18,7 +18,7 @@ public class Node
     public List<Node> childNodes;
     public Node parent;
 
-    public Node(int idplayer,Vector2Int move,int idPiece,Node parent,int[,] boardArray)
+    public Node(int idplayer, Vector2Int move, int idPiece, Node parent, int[,] boardArray)
     {
         playerid = idplayer;
         this.Piece = idPiece;
@@ -27,7 +27,7 @@ public class Node
         visits = 0;
         childNodes = new List<Node>();
         this.parent = parent;
-        this.piecesPosition = boardArray;
+        this.piecesPosition = (int[,]) boardArray.Clone();
     }
 
     public double ScoreValue()
@@ -87,14 +87,14 @@ public class _tempMonteCarlo : MonoBehaviour
             if (boardManager != null)
             {
 
-            boardTab = boardManager.GetBoardWithIds();
-            //for (int i = 0; i < boardTab.GetLength(0); i++)
-            //{
-            //    for (int j = 0; j < boardTab.GetLength(1); j++)
-            //    {
-            //        Debug.Log($"tableau[{i},{j}] = {boardTab[i, j]}");
-            //    }
-            //}
+            boardTab = (int[,])boardManager.GetBoardWithIds().Clone();
+            for (int i = 0; i < boardTab.GetLength(0); i++)
+            {
+                for (int j = 0; j < boardTab.GetLength(1); j++)
+                {
+                    Debug.Log($"tableau[{i},{j}] = {boardTab[i, j]}");
+                }
+            }
             for (int i = 0; i < visits; i++)
                 {
                     Node node = Selection(rootNode);

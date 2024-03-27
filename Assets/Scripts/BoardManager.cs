@@ -779,14 +779,17 @@ public class BoardManager : MonoBehaviour, IGameManager
 
     public IPawn GetPieceById(int id)
     {
+        LogPieceIds();
         for (int i = 0; i < pieceIds.GetLength(0); i++)
         {
             for (int k = 0; k < pieceIds.GetLength(1); k++)
             {
-                if (id == pieceIds[i,k])
+                
+                if (id == pieceIds[i, k])
                 {
+                    Debug.Log($"id : {id} id dans le tableau {pieceIds[i, k]}");
                     IPawn piece = boardArray[i, k].transform.GetChild(0).GetComponent<IPawn>();
-                    //Debug.Log(piece+" "+i+" "+k);
+                    Debug.Log(piece + " " + i + " " + k);
                     return piece;
                 }
             }
