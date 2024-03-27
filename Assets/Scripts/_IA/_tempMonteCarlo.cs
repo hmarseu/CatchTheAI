@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
+using Unity.Mathematics;
 using UnityEngine;
 
 //ia.MonteCarloSearch(new Node(idplayer, new Vector2Int(), null, null, pieceIds), 100);
@@ -9,7 +10,7 @@ using UnityEngine;
 public class Node
 {
     public int playerid;
-    public SOPiece Piece;
+    public int Piece;
     public int[,] piecesPosition; 
     public Vector2Int move; 
     public int visits;
@@ -17,7 +18,7 @@ public class Node
     public List<Node> childNodes;
     public Node parent;
 
-    public Node(int idplayer,Vector2Int move,SOPiece idPiece,Node parent,int[,] boardArray)
+    public Node(int idplayer,Vector2Int move,int idPiece,Node parent,int[,] boardArray)
     {
         playerid = idplayer;
         this.Piece = idPiece;
@@ -73,21 +74,6 @@ public class _tempMonteCarlo : MonoBehaviour
         pieceDataDictionnary[5] = Koropokkuru;
     }
 
-    //public Vector2Int StartMonteCarloSearch(Node rootNode, int visits)
-    //{
-    //    Vector2Int bestMove = new Vector2Int();
-    //    AutoResetEvent searchFinishedEvent = new AutoResetEvent(false);
-    //    Thread searchThread = new Thread(() =>
-    //    {
-    //        bestMove = MonteCarloSearch(rootNode, visits);
-
-    //        searchFinishedEvent.Set();
-    //    });
-    //    searchThread.Start();
-    //    searchFinishedEvent.WaitOne();
-    //    return bestMove;
-    //}
-
 
 
         /// <summary>
@@ -96,19 +82,19 @@ public class _tempMonteCarlo : MonoBehaviour
         /// <param name="rootNode"></param>
         /// <param name="visits"></param>
         /// <returns></returns>
-        public Vector2Int MonteCarloSearch(Node rootNode,int visits)
+        public Vector3Int MonteCarloSearch(Node rootNode,int visits)
         {
             if (boardManager != null)
             {
 
             boardTab = boardManager.GetBoardWithIds();
-            for (int i = 0; i < boardTab.GetLength(0); i++)
-            {
-                for (int j = 0; j < boardTab.GetLength(1); j++)
-                {
-                    Debug.Log($"tableau[{i},{j}] = {boardTab[i, j]}");
-                }
-            }
+            //for (int i = 0; i < boardTab.GetLength(0); i++)
+            //{
+            //    for (int j = 0; j < boardTab.GetLength(1); j++)
+            //    {
+            //        Debug.Log($"tableau[{i},{j}] = {boardTab[i, j]}");
+            //    }
+            //}
             for (int i = 0; i < visits; i++)
                 {
                     Node node = Selection(rootNode);
@@ -128,7 +114,7 @@ public class _tempMonteCarlo : MonoBehaviour
                         bestChild = child;
                     }
                 }
-            Debug.Log($"piece : {bestChild.Piece.name} meilleur coup : {bestChild.move} ");
+            Debug.Log($"piece : {bestChild.Piece} meilleur coup : {bestChild.move} ");
             //for (int i = 0; i < bestChild.piecesPosition.GetLength(0); i++)
             //{
             //    for (int j = 0; j < bestChild.piecesPosition.GetLength(1); j++)
@@ -138,10 +124,12 @@ public class _tempMonteCarlo : MonoBehaviour
             //}
             if (bestChild != null)
             {
-                return bestChild.move;
+               
+
+                return new Vector3Int(bestChild.move.x,bestChild.move.y,bestChild.Piece);
             }
             }
-            return new Vector2Int();
+            return new Vector3Int();
         
     }
 
@@ -182,7 +170,7 @@ public class _tempMonteCarlo : MonoBehaviour
 
         int currentPlayer = node.playerid;
         int[,] currentBoard = (int[,])node.piecesPosition.Clone();
-        while(indexTest < 1000)
+        while(true)
         {
             List<Vector3Int> playerPieces = GetAllPiecesOfPlayer(node);
             List<Vector2Int> validMoves = new List<Vector2Int>();
@@ -226,11 +214,11 @@ public class _tempMonteCarlo : MonoBehaviour
         foreach (Vector3Int piece in posidpiece)
         {
             List<Vector2Int> moves = GetValidMoves(piece, node.playerid);
-            //Debug.Log($"nombre de coup a partir de cette node : {moves.Count}");
+            //Debug.Log($"id joueur: {node.playerid}");
             foreach(Vector2Int move in moves)
             {
                 //Debug.Log($"move : {move}");
-                Node child = new Node(node.playerid,move, pieceDataDictionnary[piece.z], node, ReplaceInTab(node.piecesPosition,piece.z,move));
+                Node child = new Node(node.playerid,move, piece.z, node, ReplaceInTab(node.piecesPosition,piece.z,move));
                 node.childNodes.Add(child);
                 child.parent = node;
                 
@@ -308,9 +296,21 @@ public class _tempMonteCarlo : MonoBehaviour
     {
         if (boardTab[pos.x, pos.y] != 0)
         {
-           //todo 
+           int pieceValue = boardTab[pos.x, pos.y];
+            if (math.sign(pieceValue)!=math.sign(player))
+            {
+                return true;
+            }
+            else if(math.sign(pieceValue) == math.sign(player))
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
         }
-        return true;
+        return false;
     }
     private List<Vector3Int> GetAllPiecesOfPlayer(Node node)
     {

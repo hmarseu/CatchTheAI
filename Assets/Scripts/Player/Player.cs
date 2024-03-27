@@ -48,21 +48,23 @@ public class Player : MonoBehaviour, ICompetitor
         // if the player is an IA
         if (isAI)
         {
+            Vector3Int bestMove = ia.MonteCarloSearch(new Node(idPlayer, new Vector2Int(), 0, null, boardManager.GetBoardWithIds()), 500);
+            
+            
             // get a selectedPiece to play
-            IPawn pawnTarget = null;
+            IPawn pawnTarget = boardManager.GetPieceById(bestMove.z);
 
             // get a postion where to move
-            Vector2Int newPosition = new Vector2Int(0, 0);
+            Vector2Int newPosition = new Vector2Int(bestMove.x,bestMove.y);
 
             // get selected action type
             EActionType actionType = EActionType.MOVE;
-            ia.MonteCarloSearch(new Node(idPlayer, new Vector2Int(), null, null, boardManager.GetBoardWithIds()), 500);
             // do action
             boardManager.DoAction(pawnTarget, newPosition, actionType);
         }
         else
         {
-            // do nothing, changeTurn already did it
+            // do nothing, changeTurn already did 
         }
     }
 

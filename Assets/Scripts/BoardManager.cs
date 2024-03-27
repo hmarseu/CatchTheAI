@@ -5,18 +5,12 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
-using Unity.VisualScripting;
-
 using UnityEngine;
-using UnityEngine.SceneManagement;
-using UnityEngine.UIElements;
 using YokaiNoMori.Enumeration;
 using YokaiNoMori.Interface;
 
 public class BoardManager : MonoBehaviour, IGameManager
 {
-    
-
     private int[,] pieceIds; // Array with all the position and the id of the pieces on the board
 
     int turnLeft = 0;
@@ -63,9 +57,9 @@ public class BoardManager : MonoBehaviour, IGameManager
 
     private void Start()
     {
-     
-        currentPlayerTurn = UnityEngine.Random.Range(1, 3) == 1 ? player1 : player2;
-
+        //temp
+        //currentPlayerTurn = UnityEngine.Random.Range(1, 3) == 1 ? player1 : player2;
+        currentPlayerTurn = player1;
         GenerateBoard();
         StartFillArray();
         CreationOfPlayer();
@@ -125,7 +119,7 @@ public class BoardManager : MonoBehaviour, IGameManager
         player2.SetCamp(pl2);
         player2.SetName("joueur 2");
         player2.idPlayer = -1;
-
+        player2.isAI = true;
         SetPlayerPiece();
     }
 
@@ -462,13 +456,17 @@ public class BoardManager : MonoBehaviour, IGameManager
         bool player1IsPlaying;
         if (currentPlayerTurn == player1)
         {
+            
             currentPlayerTurn = player2;
+            player2.StartTurn();
             player1IsPlaying = false;
             
         }
         else
         {
+            
             currentPlayerTurn = player1;
+            player1.StartTurn();
             player1IsPlaying = true;
         }
 
@@ -733,20 +731,30 @@ public class BoardManager : MonoBehaviour, IGameManager
     public void DoAction(IPawn pawnTarget, Vector2Int position, EActionType actionType)
     {
         Vector2Int newPosition = ConvertToYohanArray(position);
-
-        Piece piece = pawnTarget as Piece;
-        if (piece == null)
+        // ça crash encore 
+        if (pawnTarget is Piece)
         {
-            Debug.LogError("DoAction: Invalid IPawn provided.");
+            Piece piece = (Piece)pawnTarget;
+            Debug.Log(piece);
+            if (piece == null)
+            {
+                Debug.LogError("DoAction: Invalid IPawn provided.");
+                return;
+            }
+            selectedPiece = piece.gameObject;
+
+            if (actionType == EActionType.PARACHUTE) isParachuting = true;
+            else isParachuting = false;
+
+            //move function
+            OnCaseClicked(newPosition);
+        }
+        else
+        {
+            Debug.LogError("DoAction: IPawn is not of type Piece.");
             return;
         }
-        selectedPiece = piece.gameObject;
-
-        if (actionType == EActionType.PARACHUTE) isParachuting = true;
-        else isParachuting = false;
-
-        // move function
-        OnCaseClicked(newPosition);
+      
     }
 
     public Vector2Int ConvertToYohanArray(Vector2Int position)
@@ -765,5 +773,22 @@ public class BoardManager : MonoBehaviour, IGameManager
     public List<IPawn> GetPawnsOnBoard(ECampType campType)
     {
         throw new NotImplementedException();
+    }
+
+    public IPawn GetPieceById(int id)
+    {
+        for (int i = 0; i < pieceIds.GetLength(0); i++)
+        {
+            for (int k = 0; k < pieceIds.GetLength(1); k++)
+            {
+                if (id == pieceIds[i,k])
+                {
+                    IPawn piece = boardArray[i, k].transform.GetChild(0).GetComponent<IPawn>();
+                    Debug.Log(piece+" "+i+" "+k);
+                    return piece;
+                }
+            }
+        }
+        return null;
     }
 }
