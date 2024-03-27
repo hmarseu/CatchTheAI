@@ -61,6 +61,7 @@ public class Player : MonoBehaviour, ICompetitor
             EActionType actionType = EActionType.MOVE;
             // do action
             boardManager.DoAction(pawnTarget, newPosition, actionType);
+            
         }
         else
         {
@@ -71,7 +72,7 @@ public class Player : MonoBehaviour, ICompetitor
     public void StopTurn()
     {
         boardManager.ChangeTurn();
-        StartTurn();
+        //StartTurn();
     }
 
     public void GetDatas()

@@ -115,13 +115,7 @@ public class _tempMonteCarlo : MonoBehaviour
                     }
                 }
             Debug.Log($"piece : {bestChild.Piece} meilleur coup : {bestChild.move} ");
-            //for (int i = 0; i < bestChild.piecesPosition.GetLength(0); i++)
-            //{
-            //    for (int j = 0; j < bestChild.piecesPosition.GetLength(1); j++)
-            //    {
-            //        Debug.Log($"tableau[{i},{j}] = {bestChild.piecesPosition[i, j]}");
-            //    }
-            //}
+            
             if (bestChild != null)
             {
                
@@ -170,7 +164,7 @@ public class _tempMonteCarlo : MonoBehaviour
 
         int currentPlayer = node.playerid;
         int[,] currentBoard = (int[,])node.piecesPosition.Clone();
-        while(true)
+        while(indexTest <1000)
         {
             List<Vector3Int> playerPieces = GetAllPiecesOfPlayer(node);
             List<Vector2Int> validMoves = new List<Vector2Int>();

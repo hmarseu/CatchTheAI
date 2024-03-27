@@ -456,7 +456,7 @@ public class BoardManager : MonoBehaviour, IGameManager
         bool player1IsPlaying;
         if (currentPlayerTurn == player1)
         {
-            
+            Debug.Log("passage de joueur 1 a 2 ");
             currentPlayerTurn = player2;
             player2.StartTurn();
             player1IsPlaying = false;
@@ -464,7 +464,7 @@ public class BoardManager : MonoBehaviour, IGameManager
         }
         else
         {
-            
+            Debug.Log("passage de joueur 2 a 1 ");
             currentPlayerTurn = player1;
             player1.StartTurn();
             player1IsPlaying = true;
@@ -730,12 +730,14 @@ public class BoardManager : MonoBehaviour, IGameManager
 
     public void DoAction(IPawn pawnTarget, Vector2Int position, EActionType actionType)
     {
+        Debug.Log($"piece : {pawnTarget} direction : {position}, type : {actionType}");
         Vector2Int newPosition = ConvertToYohanArray(position);
+        Debug.Log($"piece : {pawnTarget} direction apres conversion: {newPosition}, type : {actionType}");
         // ça crash encore 
         if (pawnTarget is Piece)
         {
             Piece piece = (Piece)pawnTarget;
-            Debug.Log(piece);
+            //Debug.Log(piece);
             if (piece == null)
             {
                 Debug.LogError("DoAction: Invalid IPawn provided.");
@@ -761,7 +763,7 @@ public class BoardManager : MonoBehaviour, IGameManager
     {
         int x = position.y;
         int y = numberOfRows - 1 - position.x;
-        Debug.Log("ConvertToYohanArray = new position x : " + x + " new position y : " + y);
+        //Debug.Log("ConvertToYohanArray = new position x : " + x + " new position y : " + y);
         return new Vector2Int(x, y);
     }
 
@@ -784,7 +786,7 @@ public class BoardManager : MonoBehaviour, IGameManager
                 if (id == pieceIds[i,k])
                 {
                     IPawn piece = boardArray[i, k].transform.GetChild(0).GetComponent<IPawn>();
-                    Debug.Log(piece+" "+i+" "+k);
+                    //Debug.Log(piece+" "+i+" "+k);
                     return piece;
                 }
             }
