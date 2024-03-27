@@ -6,8 +6,10 @@ using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 using UnityEngine;
+using UnityEngine.TextCore.Text;
 using YokaiNoMori.Enumeration;
 using YokaiNoMori.Interface;
+using YokaiNoMori.Struct;
 
 public class BoardManager : MonoBehaviour, IGameManager
 {
@@ -36,13 +38,15 @@ public class BoardManager : MonoBehaviour, IGameManager
     public Player player1;
     public Player player2;
     public Player currentPlayerTurn;
-    private bool isParachuting;
     private bool isGameEnd = false;
 
     [Header("Player Moves")]
     [SerializeField] private int maxMovesUntilDraw = 6;
     private Dictionary<int, List<KeyValuePair<EPawnType, Vector2Int>>> playerMoves = new Dictionary<int, List<KeyValuePair<EPawnType, Vector2Int>>>();
+    EActionType eActionType;
+    private SAction lastAction;
 
+    [Header("Visual Effects")]
     [Header("Visual Effects")]
     [SerializeField] private VFX_Manager _vfxManager;
     [SerializeField] private SFXManager _sfxManager;
@@ -307,7 +311,7 @@ public class BoardManager : MonoBehaviour, IGameManager
     {
         int row = position.x;
         int col = position.y;
-        
+
         int playerId = (player == 1) ? 1 : -1;
         pieceIds[row, col] = playerId * selectedPiece.GetComponent<Piece>().idPiece;
 
@@ -321,6 +325,8 @@ public class BoardManager : MonoBehaviour, IGameManager
         //StartCoroutine(DelayedUpdateTilesClickability());
         UpdateTilesClickability();
     }
+
+
 
     public delegate void CemeteryRemove(GameObject selectedPiece);
     public static event CemeteryRemove removeButtonCemetary;
@@ -362,27 +368,34 @@ public class BoardManager : MonoBehaviour, IGameManager
         int row = position.x;
         int col = position.y;
 
-        if (isParachuting)
-        {
-            removeButtonCemetary(selectedPiece);
-        }
+        if (eActionType == EActionType.PARACHUTE) removeButtonCemetary(selectedPiece);
+
         else
         {
             // previous position is now empty
             pieceIds[selectedPiecePosition.x, selectedPiecePosition.y] = 0;
-            
-            if ((row == 0 && player == -1)|| row == 3 && player == 1)
+
+            if ((row == 0 && player == -1) || row == 3 && player == 1)
             {
                 // function is doing the verification of the piece type
-                TransformationKodamaOrWinKoro(selectedPiece, new Vector2Int(row,col), false);
+                TransformationKodamaOrWinKoro(selectedPiece, new Vector2Int(row, col), false);
             }
         }
 
         EPawnType pawnType = selectedPiece.GetComponent<Piece>().GetPawnType();
         CheckPlayerHistory(position, player, pawnType);
 
+
         // check if there is already a piece
-        HandleEatingPiece(position);
+        GameObject pieceEaten = HandleEatingPiece(position);
+        // get which one it is
+        IPawn takedPawn = null;
+        if (pieceEaten)
+        {
+            Piece pieceComponent = pieceEaten.GetComponent<Piece>();
+            if (pieceComponent) takedPawn = pieceComponent as IPawn;
+        }
+
 
         // move the selected piece on the new case
         if (player != 1) boardArray[row, col].GetComponent<BoardCase>().MovePiece(selectedPiece, 180f);
@@ -392,13 +405,17 @@ public class BoardManager : MonoBehaviour, IGameManager
         Piece piece = selectedPiece.GetComponent<Piece>();
         pieceIds[row, col] = piece.idPlayer * piece.idPiece;
 
+        // keep last action info
+        UpdateLastAction(currentPlayerTurn.GetCamp(), piece.soPiece.ePawnType, eActionType, piece.GetCurrentPosition(), position, takedPawn);
+
         // give the piece its position
-        piece.SetCurrentPosition(new Vector2Int (row, col));
+        piece.SetCurrentPosition(position);
 
-
+        /*
         Debug.LogError("MOVE");
         LogPieceIds();
         Debug.LogError("END MOVE");
+        */
 
         selectedPiece = null;
         selectedPiecePosition = Vector2Int.zero;
@@ -448,23 +465,28 @@ public class BoardManager : MonoBehaviour, IGameManager
     {
         if(!isGameEnd)
         {
+            Debug.Log("game not ended");
             // got a piece on it
             if (selectedPiece)
-            { 
+            {
+                Debug.Log("piece selected");
                 // IA not supposed to go in
-                if (selectedPiecePosition == clickedPosition && !isParachuting)
+                if (selectedPiecePosition == clickedPosition && eActionType == EActionType.MOVE)
                 {
                     selectedPiece = null;
                     selectedPiecePosition = Vector2Int.zero;
                     UpdateTilesAtTurnChange();
                     return;
                 }
-                
+
+                Debug.Log("move piece");
                 if (currentPlayerTurn == player2) MovePiece(clickedPosition, -1);
                 else MovePiece(clickedPosition, 1);
 
                 // ChangeTurn(); // logic before, not now with AI
                 // stop the turn of the current player
+
+                Debug.Log("stop turn");
                 currentPlayerTurn.StopTurn();
             }
             else
@@ -573,7 +595,8 @@ public class BoardManager : MonoBehaviour, IGameManager
 
     public void UpdateTilesClickability(List<Vector2Int> possibleMoves = null, bool parachuting = false)
     {
-        isParachuting = parachuting;
+        if (parachuting) eActionType = EActionType.PARACHUTE;
+        else eActionType = EActionType.MOVE;
 
         // Go through the board
         for (int i = 0; i < numberOfRows; i++)
@@ -611,23 +634,25 @@ public class BoardManager : MonoBehaviour, IGameManager
         }
     }
 
-    private void HandleEatingPiece(Vector2Int newPosition)
+    private GameObject HandleEatingPiece(Vector2Int newPosition)
     {
         GameObject pieceToEat = GetPieceAtPosition(newPosition);
         if (pieceToEat != null)
         {
-            // add the piece in the cemetery
-            int playerId = selectedPiece.GetComponent<Piece>().idPlayer; // id of the player who is gonna eat
+            // add the piece to the cemetery
+            int playerId = selectedPiece.GetComponent<Piece>().idPlayer; // ID of the player whos gonna eat
             if (pieceToEat.GetComponent<Piece>().soPiece.ePawnType == EPawnType.Koropokkuru)
             {
                 End(playerId);
-                Debug.Log("LAA");
-                return;
+                return pieceToEat;
             }
-            TransformationKodamaOrWinKoro(pieceToEat,newPosition,true);
+            TransformationKodamaOrWinKoro(pieceToEat, newPosition, true);
             cemeteryManager.AddToCemetery(pieceToEat, playerId);
             ChangePieceTeam(pieceToEat);
+
+            return pieceToEat;
         }
+        return null;
     }
 
     private void End(int player)
@@ -824,20 +849,23 @@ public class BoardManager : MonoBehaviour, IGameManager
                 Debug.LogError("DoAction: Invalid IPawn provided.");
                 return;
             }
-            selectedPiece = piece.gameObject;
 
-            if (actionType == EActionType.PARACHUTE) isParachuting = true;
-            else
+            selectedPiece = piece.gameObject;
+            eActionType = actionType;
+
+            if (eActionType == EActionType.MOVE)
             {
+                /*
                 Debug.LogWarning("START SHOW POSITION");
                 LogPiecePositions();
                 Debug.LogWarning("END SHOW POSITION");
+                */
 
                 selectedPiecePosition = piece.GetCurrentPosition();
-                isParachuting = false;
             }
 
             //move function
+            Debug.LogError("MOVE");
             OnCaseClicked(ConvertToYohanArray(newPosition));
         }
         else
@@ -857,12 +885,48 @@ public class BoardManager : MonoBehaviour, IGameManager
 
     public List<IPawn> GetReservePawnsByPlayer(ECampType campType)
     {
-        throw new NotImplementedException();
+        int playerId = campType == ECampType.PLAYER_ONE ? 1 : -1;
+        List<IPawn> reservePawns = new List<IPawn>();
+
+        List<GameObject> deadPieces = cemeteryManager.GetDeadPiecesByPlayer(playerId);
+        foreach (GameObject pieceObject in deadPieces)
+        {
+            IPawn pawn = pieceObject.GetComponent<IPawn>();
+            if (pawn != null)
+            {
+                reservePawns.Add(pawn);
+            }
+            else
+            {
+                Debug.LogError("Piece object in dead zone does not have IPawn component.");
+            }
+        }
+
+        return reservePawns;
     }
 
     public List<IPawn> GetPawnsOnBoard(ECampType campType)
     {
-        throw new NotImplementedException();
+        List<IPawn> pawnsOnBoard = new List<IPawn>();
+        for (int i = 0; i < numberOfRows; i++)
+        {
+            for (int j = 0; j < numberOfColumns; j++)
+            {
+                // has smth?
+                GameObject pieceObject = GetPieceObjectAtPosition(new Vector2Int(i, j));
+                if (pieceObject != null)
+                {
+                    Piece piece = pieceObject.GetComponent<Piece>();
+                    // check if belong to the player we want
+                    if (piece.player.GetCamp() == campType)
+                    {
+                        pawnsOnBoard.Add(piece);
+                    }
+                }
+            }
+        }
+
+        return pawnsOnBoard;
     }
 
     public IPawn GetPieceById(int id)
@@ -882,5 +946,40 @@ public class BoardManager : MonoBehaviour, IGameManager
             }
         }
         return null;
+    }
+
+    public SAction GetLastAction()
+    {
+        return lastAction;
+    }
+
+    // update last action done
+    private void UpdateLastAction(ECampType campType, EPawnType pawnType, EActionType actionType, Vector2Int oldPosition, Vector2Int newPosition, IPawn takedPawn)
+    {
+        lastAction.CampType = campType;
+        lastAction.PawnType = pawnType;
+        lastAction.ActionType = actionType;
+        lastAction.StartPosition = oldPosition;
+        lastAction.NewPosition = newPosition;
+        lastAction.TakedPawn = takedPawn;
+    }
+
+    private void DebugLastAction()
+    {
+        Debug.Log("Last Action Debug:");
+        Debug.Log("Camp Type: " + lastAction.CampType);
+        Debug.Log("Pawn Type: " + lastAction.PawnType);
+        Debug.Log("Action Type: " + lastAction.ActionType);
+        Debug.Log("Start Position: " + lastAction.StartPosition);
+        Debug.Log("New Position: " + lastAction.NewPosition);
+        if (lastAction.TakedPawn != null && lastAction.ActionType == EActionType.MOVE)
+        {
+            Debug.Log("Taked Pawn: " + lastAction.TakedPawn);
+        }
+    }
+
+    SAction IGameManager.GetLastAction()
+    {
+        throw new NotImplementedException();
     }
 }

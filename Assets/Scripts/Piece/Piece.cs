@@ -63,7 +63,7 @@ public class Piece : MonoBehaviour, IPawn
 
     public Vector2Int GetCurrentPosition()
     {
-        return currentPosition; ;
+        return currentPosition;
     }
 
     public IBoardCase GetCurrentBoardCase()

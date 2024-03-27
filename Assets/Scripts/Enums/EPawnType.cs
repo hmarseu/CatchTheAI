@@ -7,6 +7,7 @@ namespace YokaiNoMori.Enumeration
         KodamaSamurai,
         Kitsune,
         Tanuki,
-        Koropokkuru
+        Koropokkuru,
+        Undefined
     }
 }

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
+using YokaiNoMori.Interface;
 
 namespace catchTheAI
 {
@@ -10,7 +11,6 @@ namespace catchTheAI
         [SerializeField] private GameObject deadZonePlayer1;
         [SerializeField] private GameObject deadZonePlayer2;
         [SerializeField] private GameObject parentDeadPieces;
-
 
         public void AddToCemetery(GameObject piece, int playerId)
         {
@@ -60,5 +60,19 @@ namespace catchTheAI
             }
         }
 
+        public List<GameObject> GetDeadPiecesByPlayer(int playerId)
+        {
+            GameObject deadZone = playerId == 1 ? deadZonePlayer1 : deadZonePlayer2;
+            List<GameObject> deadPieces = new List<GameObject>();
+
+            foreach (Transform child in deadZone.transform)
+            {
+                deadPieces.Add(child.gameObject);
+            }
+
+            return deadPieces;
+        }
+
     }
 }
+

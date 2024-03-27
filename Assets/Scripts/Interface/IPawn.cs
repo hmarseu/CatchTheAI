@@ -7,6 +7,7 @@ namespace YokaiNoMori.Interface
 {
     public interface IPawn
     {
+
         /// <summary>
         /// Recovers all moves of the pawn concerned
         /// </summary>
@@ -36,6 +37,7 @@ namespace YokaiNoMori.Interface
         /// </summary>
         /// <returns>EPawnType</returns>
         public EPawnType GetPawnType();
+        
     }
 
 }

@@ -1,4 +1,3 @@
-using System;
 using YokaiNoMori.Enumeration;
 
 namespace YokaiNoMori.Interface
@@ -9,7 +8,9 @@ namespace YokaiNoMori.Interface
         /// Called by the GameManager for init competitor and get the GameManager (for AI)
         /// </summary>
         /// <param name="igameManager"></param>
-        public void Init(IGameManager igameManager, float timerForAI);
+        /// <param name="timerForAI">Allows my Game Manager to set the time for your AI search</param>
+        /// <param name="currentCamp">Allows my tournament manager to change the camp at the start of the game</param>
+        public void Init(IGameManager igameManager, float timerForAI, ECampType currentCamp);
 
 
         /// <summary>
@@ -23,12 +24,6 @@ namespace YokaiNoMori.Interface
         /// </summary>
         /// <returns></returns>
         public ECampType GetCamp();
-
-        /// <summary>
-        /// Allows my tournament manager to change the camp at the start of the game
-        /// </summary>
-        /// <param name="camp"></param>
-        public void SetCamp(ECampType camp);
 
         /// <summary>
         /// Used before StartTurn() for getting data from the board

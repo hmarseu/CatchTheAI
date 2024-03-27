@@ -1,7 +1,7 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 using YokaiNoMori.Enumeration;
+using YokaiNoMori.Struct;
 
 
 namespace YokaiNoMori.Interface
@@ -42,5 +42,10 @@ namespace YokaiNoMori.Interface
         /// <param name="campType"></param>
         /// <returns></returns>
         public List<IPawn> GetPawnsOnBoard(ECampType campType);
+
+        /// <summary>
+        /// Retrieve the last action
+        /// </summary>
+        public SAction GetLastAction();
     }
 }
